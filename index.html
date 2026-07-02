@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Painel do Escritório</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f7f7f5; color: #1f1f1f; font-size: 14px; line-height: 1.45; }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #e6e3dc; background: #ffffff; position: sticky; top: 0; z-index: 10; gap: 8px; }
+  h1 { font-size: 18px; margin: 0; font-weight: 600; }
+  .sub { color: #6b6b6b; font-size: 12px; margin-top: 2px; }
+  .header-actions { display: flex; gap: 6px; }
+
+  .tabs { display: flex; gap: 4px; padding: 12px 20px 0; background: #ffffff; border-bottom: 1px solid #e6e3dc; overflow-x: auto; }
+  .tab { padding: 8px 14px; border: 1px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; color: #555; font-size: 13px; white-space: nowrap; background: transparent; display: flex; align-items: center; gap: 6px; font-family: inherit; }
+  .tab:hover { background: #f3f2ee; }
+  .tab.active { background: #f7f7f5; border-color: #e6e3dc; color: #1f1f1f; font-weight: 600; margin-bottom: -1px; }
+  .tab .count { background: #e6e3dc; color: #555; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .tab.active .count { background: #d97706; color: #fff; }
+  .tab.dragging { opacity: 0.4; }
+  .tab.drop-target { box-shadow: -3px 0 0 0 #d97706; }
+  .tab[draggable="true"] { cursor: grab; }
+
+  main { padding: 18px 20px 60px; max-width: 1100px; margin: 0 auto; }
+
+  .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .btn { border: 1px solid #d4d1c9; background: #fff; color: #1f1f1f; padding: 7px 12px; font-size: 13px; border-radius: 6px; cursor: pointer; font-family: inherit; }
+  .btn:hover { background: #f3f2ee; }
+  .btn.primary { background: #1f1f1f; color: #fff; border-color: #1f1f1f; }
+  .btn.primary:hover { background: #333; }
+  .btn.danger { color: #b91c1c; border-color: #f1c2c2; }
+  .btn.danger:hover { background: #fbecec; }
+  .btn.small { padding: 5px 9px; font-size: 12px; }
+
+  select, input, textarea { border: 1px solid #d4d1c9; background: #fff; padding: 7px 10px; border-radius: 6px; font-size: 13px; font-family: inherit; color: #1f1f1f; }
+  select:focus, input:focus, textarea:focus { outline: 2px solid #d97706; outline-offset: -1px; border-color: #d97706; }
+
+  .filter-row { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .filter-row label { color: #6b6b6b; font-size: 12px; }
+
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .card { background: #fff; border: 1px solid #e6e3dc; border-radius: 10px; padding: 12px 14px; display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; align-items: start; transition: opacity 0.15s, box-shadow 0.15s; }
+  .card.dragging { opacity: 0.4; }
+  .card.drop-above { box-shadow: 0 -3px 0 0 #d97706 inset, 0 -3px 0 0 #d97706; }
+  .card.drop-below { box-shadow: 0 3px 0 0 #d97706 inset, 0 3px 0 0 #d97706; }
+
+  .drag-handle { grid-column: 1; grid-row: 1 / span 3; align-self: center; cursor: grab; color: #c4c1ba; padding: 6px 4px; user-select: none; font-size: 14px; line-height: 1; letter-spacing: -1px; }
+  .drag-handle:hover { color: #555; }
+  .drag-handle:active { cursor: grabbing; }
+
+  .card .main-line { grid-column: 2; grid-row: 1; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .card .subject { grid-column: 2; grid-row: 2; color: #4b4b4b; font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+  .card .extras { grid-column: 2; grid-row: 3; display: flex; gap: 8px; flex-wrap: wrap; color: #6b6b6b; font-size: 12px; margin-top: 4px; }
+  .card .extras .extra { background: #f3f2ee; padding: 2px 8px; border-radius: 4px; }
+  .card .extras .extra .lbl { font-weight: 600; color: #4b4b4b; margin-right: 4px; }
+  .card .actions { grid-column: 3; grid-row: 1 / span 3; display: flex; gap: 6px; align-items: center; }
+
+  .card .name { font-weight: 600; font-size: 14px; }
+  .card .when { color: #6b6b6b; font-size: 12px; background: #f3f2ee; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+  .card .when.overdue { background: #fde8e8; color: #b91c1c; }
+  .card .when.today { background: #fef3c7; color: #92400e; }
+
+  .icon-btn { border: none; background: transparent; cursor: pointer; color: #6b6b6b; padding: 4px 6px; border-radius: 4px; font-size: 14px; font-family: inherit; }
+  .icon-btn:hover { background: #f3f2ee; color: #1f1f1f; }
+
+  .status { font-size: 11px; padding: 3px 22px 3px 8px; border-radius: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; border: none; cursor: pointer; font-family: inherit; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 4 L5 7 L8 4' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat: no-repeat; background-position: right 6px center; background-size: 8px; }
+  .status:hover { filter: brightness(0.95); }
+  .status:focus { outline: 2px solid #d97706; outline-offset: 1px; }
+
+  .empty { text-align: center; color: #888; padding: 50px 20px; background: #fff; border: 1px dashed #d4d1c9; border-radius: 10px; }
+  .empty p { margin: 6px 0; }
+
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal-bg.open { display: flex; }
+  .modal { background: #fff; border-radius: 12px; padding: 22px; width: 100%; max-width: 480px; box-shadow: 0 12px 40px rgba(0,0,0,0.18); max-height: 90vh; overflow-y: auto; }
+  .modal.wide { max-width: 640px; }
+  .modal h2 { margin: 0 0 14px; font-size: 16px; font-weight: 600; }
+  .modal h3 { margin: 16px 0 6px; font-size: 12px; font-weight: 600; color: #4b4b4b; text-transform: uppercase; letter-spacing: 0.4px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; color: #555; margin-bottom: 4px; font-weight: 500; }
+  .field input, .field select, .field textarea { width: 100%; }
+  .field textarea { min-height: 70px; resize: vertical; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; }
+  .modal-actions .right { display: flex; gap: 8px; }
+
+  .settings-nav { display: flex; gap: 2px; border-bottom: 1px solid #e6e3dc; margin-bottom: 14px; }
+  .settings-nav button { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 8px 14px; font-size: 13px; cursor: pointer; font-family: inherit; color: #6b6b6b; margin-bottom: -1px; }
+  .settings-nav button.active { color: #1f1f1f; font-weight: 600; border-bottom-color: #d97706; }
+  .settings-nav button:hover:not(.active) { background: #f3f2ee; }
+  .settings-section { display: none; }
+  .settings-section.active { display: block; }
+
+  .row-item { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .row-item input.icon-input { width: 50px; text-align: center; }
+  .row-item input.label-input { flex: 1; min-width: 0; }
+  .row-item .swatch { width: 32px; height: 28px; border-radius: 6px; border: 1px solid #d4d1c9; cursor: pointer; flex-shrink: 0; padding: 0; }
+  .add-row { display: flex; gap: 6px; padding-top: 10px; border-top: 1px solid #eee; margin-top: 10px; }
+  .help-text { font-size: 12px; color: #6b6b6b; margin: 0 0 10px; }
+
+  @media (max-width: 600px) {
+    .card { grid-template-columns: auto 1fr; }
+    .card .actions { grid-column: 2; grid-row: auto; }
+    .card .main-line, .card .subject, .card .extras { grid-column: 2; }
+    .filter-row { margin-left: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Painel do Escritório</h1>
+    <div class="sub" id="subline">Carregando…</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn" id="settingsBtn" title="Configurar categorias, status e campos">⚙ Configurações</button>
+    <button class="btn primary" id="newBtn">+ Novo</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs"></nav>
+
+<main>
+  <div class="toolbar">
+    <button class="btn" id="addBtnTop">+ Adicionar nesta aba</button>
+    <div class="filter-row">
+      <label for="filterStatus">Status:</label>
+      <select id="filterStatus"><option value="todos">Todos</option></select>
+      <label for="sortBy">Ordenar:</label>
+      <select id="sortBy">
+        <option value="manual">Manual (arrastar)</option>
+        <option value="data">Por data</option>
+        <option value="nome">Por nome</option>
+        <option value="criado">Mais recentes</option>
+      </select>
+    </div>
+  </div>
+  <div id="list" class="list"></div>
+</main>
+
+<!-- Modal de item -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2 id="modalTitle">Novo item</h2>
+    <div class="field">
+      <label for="fCategoria">Categoria</label>
+      <select id="fCategoria"></select>
+    </div>
+    <div class="field">
+      <label for="fNome" id="fNomeLabel">Nome</label>
+      <input id="fNome" type="text" placeholder="Ex: João Silva / Empresa XYZ">
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label for="fData" id="fDataLabel">Data</label>
+        <input id="fData" type="date">
+      </div>
+      <div class="field">
+        <label for="fHora" id="fHoraLabel">Hora</label>
+        <input id="fHora" type="time">
+      </div>
+    </div>
+    <div class="field">
+      <label for="fAssunto" id="fAssuntoLabel">Assunto / Observações</label>
+      <textarea id="fAssunto" placeholder="Detalhes, processo, telefone, valor, contexto..."></textarea>
+    </div>
+    <div id="customFieldsContainer"></div>
+    <div class="field">
+      <label for="fStatus">Status</label>
+      <select id="fStatus"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger" id="deleteBtn" style="display:none;">Excluir</button>
+      <div class="right">
+        <button class="btn" id="cancelBtn">Cancelar</button>
+        <button class="btn primary" id="saveBtn">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Configurações -->
+<div class="modal-bg" id="settingsModalBg">
+  <div class="modal wide">
+    <h2>Configurações</h2>
+    <div class="settings-nav">
+      <button data-section="categorias" class="active">Categorias</button>
+      <button data-section="statuses">Status</button>
+      <button data-section="fields">Campos</button>
+    </div>
+
+    <div id="settingsSection_categorias" class="settings-section active">
+      <p class="help-text">Renomeie ou troque o ícone (1 emoji). Use ↑↓ para reordenar e 🗑 para remover. Você também pode arrastar as abas diretamente lá em cima.</p>
+      <div id="catList"></div>
+      <div class="add-row">
+        <input id="newCatIcon" class="icon-input" type="text" placeholder="📌" maxlength="3">
+        <input id="newCatLabel" class="label-input" type="text" placeholder="Nome da nova categoria">
+        <button class="btn primary small" id="addCatBtn">+ Adicionar</button>
+      </div>
+    </div>
+
+    <div id="settingsSection_statuses" class="settings-section">
+      <p class="help-text">Crie, renomeie ou remova status. Clique no quadradinho colorido para escolher uma cor.</p>
+      <div id="statusList"></div>
+      <div class="add-row">
+        <input id="newStatusLabel" class="label-input" type="text" placeholder="Nome do novo status (ex: Em análise)">
+        <button class="btn primary small" id="addStatusBtn">+ Adicionar</button>
+      </div>
+    </div>
+
+    <div id="settingsSection_fields" class="settings-section">
+      <h3>Rótulos dos campos fixos</h3>
+      <p class="help-text">Renomeie como esses campos aparecem nos formulários.</p>
+      <div class="row-2">
+        <div class="field"><label>"Nome"</label><input id="labelNome" type="text"></div>
+        <div class="field"><label>"Data"</label><input id="labelData" type="text"></div>
+      </div>
+      <div class="row-2">
+        <div class="field"><label>"Hora"</label><input id="labelHora" type="text"></div>
+        <div class="field"><label>"Assunto / Observações"</label><input id="labelAssunto" type="text"></div>
+      </div>
+
+      <h3>Campos personalizados</h3>
+      <p class="help-text">Adicione campos extras (telefone, valor, número do processo, vara, etc). Aparecem em todas as categorias e ficam visíveis nos cards quando preenchidos.</p>
+      <div id="customFieldsList"></div>
+      <div class="add-row">
+        <input id="newFieldLabel" class="label-input" type="text" placeholder="Ex: Telefone, Valor (R$), Processo">
+        <select id="newFieldType" style="width: 130px;">
+          <option value="text">Texto curto</option>
+          <option value="textarea">Texto longo</option>
+        </select>
+        <button class="btn primary small" id="addFieldBtn">+ Adicionar</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" id="settingsCloseBtn">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Color picker popup -->
+<div class="modal-bg" id="colorPickerBg">
+  <div class="modal" style="max-width: 340px;">
+    <h2>Escolher cor</h2>
+    <div id="colorPalette" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;"></div>
+    <div class="modal-actions">
+      <button class="btn" id="colorPickerCancelBtn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const STORAGE_KEY = "painel_escritorio_v2";
+
+  const DEFAULT_CATEGORIAS = [
+    { id: "atendimentos", label: "Atendimentos", icon: "📞" },
+    { id: "reunioes", label: "Reuniões", icon: "👥" },
+    { id: "audiencias", label: "Audiências / Serviços", icon: "⚖️" },
+    { id: "cumprimentos", label: "Cumprimentos", icon: "📋" },
+    { id: "clientes_recorrentes", label: "Clientes Recorrentes / Empresas", icon: "🏢" },
+    { id: "honorarios", label: "Honorários a Receber", icon: "💰" },
+    { id: "leads_quentes", label: "Leads Quentes", icon: "🔥" },
+    { id: "leads_iniciais", label: "Leads Iniciais", icon: "🌱" }
+  ];
+
+  const DEFAULT_STATUSES = [
+    { value: "pendente",      label: "Pendente",            bg: "#fef3c7", color: "#92400e" },
+    { value: "faltando_docs", label: "Faltando documentos", bg: "#fde8e8", color: "#b91c1c" },
+    { value: "pedir_docs",    label: "Pedir documentos",    bg: "#ffedd5", color: "#9a3412" },
+    { value: "docs_prontos",  label: "Documentos prontos",  bg: "#dbeafe", color: "#1e40af" },
+    { value: "feito",         label: "Feito",               bg: "#dcfce7", color: "#166534" },
+    { value: "perdido",       label: "Perdido",             bg: "#fde8e8", color: "#b91c1c" }
+  ];
+
+  const DEFAULT_FIELDS = {
+    nome: "Nome",
+    data: "Data",
+    hora: "Hora",
+    assunto: "Assunto / Observações"
+  };
+
+  const COLOR_PALETTE = [
+    { name: "Amarelo",      bg: "#fef3c7", color: "#92400e" },
+    { name: "Verde",        bg: "#dcfce7", color: "#166534" },
+    { name: "Vermelho",     bg: "#fde8e8", color: "#b91c1c" },
+    { name: "Laranja",      bg: "#ffedd5", color: "#9a3412" },
+    { name: "Azul",         bg: "#dbeafe", color: "#1e40af" },
+    { name: "Roxo",         bg: "#ede9fe", color: "#5b21b6" },
+    { name: "Rosa",         bg: "#fce7f3", color: "#9d174d" },
+    { name: "Ciano",        bg: "#cffafe", color: "#155e75" },
+    { name: "Verde-claro",  bg: "#d1fae5", color: "#065f46" },
+    { name: "Cinza",        bg: "#f3f4f6", color: "#374151" },
+    { name: "Bege",         bg: "#fef3e2", color: "#78350f" },
+    { name: "Preto",        bg: "#1f2937", color: "#f3f4f6" }
+  ];
+
+  let state = loadState();
+  ensureOrdens();
+  let activeTab = state.categorias[0] ? state.categorias[0].id : null;
+  let editingId = null;
+  let dragSrcItemId = null;
+  let dragSrcCatId = null;
+  let colorPickerCallback = null;
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      let s = raw ? JSON.parse(raw) : {};
+      if (!s.items) s.items = [];
+      if (!s.categorias || !Array.isArray(s.categorias) || s.categorias.length === 0) {
+        s.categorias = JSON.parse(JSON.stringify(DEFAULT_CATEGORIAS));
+      }
+      if (!s.statuses || !Array.isArray(s.statuses) || s.statuses.length === 0) {
+        s.statuses = JSON.parse(JSON.stringify(DEFAULT_STATUSES));
+      }
+      if (!s.fieldLabels || typeof s.fieldLabels !== "object") {
+        s.fieldLabels = { ...DEFAULT_FIELDS };
+      } else {
+        s.fieldLabels = { ...DEFAULT_FIELDS, ...s.fieldLabels };
+      }
+      if (!s.customFields || !Array.isArray(s.customFields)) s.customFields = [];
+      return s;
+    } catch(e) {
+      return {
+        items: [],
+        categorias: JSON.parse(JSON.stringify(DEFAULT_CATEGORIAS)),
+        statuses: JSON.parse(JSON.stringify(DEFAULT_STATUSES)),
+        fieldLabels: { ...DEFAULT_FIELDS },
+        customFields: []
+      };
+    }
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function slugify(s) {
+    return s.toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || ("x_" + uid());
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+  function ensureOrdens() {
+    const byCat = {};
+    state.items.forEach(it => { (byCat[it.categoria] = byCat[it.categoria] || []).push(it); });
+    Object.values(byCat).forEach(arr => {
+      if (arr.some(it => typeof it.ordem !== "number")) {
+        arr.sort((a,b) => (a.criado || 0) - (b.criado || 0));
+        arr.forEach((it, i) => it.ordem = i);
+      }
+    });
+    saveState();
+  }
+  function getStatusDef(value) {
+    return state.statuses.find(s => s.value === value) || { value, label: value || "—", bg: "#eee", color: "#333" };
+  }
+
+  // ========== TABS ==========
+  function renderTabs() {
+    const el = document.getElementById("tabs");
+    el.innerHTML = "";
+    if (state.categorias.length === 0) {
+      el.innerHTML = '<div style="padding:10px; color:#888;">Nenhuma categoria — clique em ⚙ Configurações para criar.</div>';
+      return;
+    }
+    if (!state.categorias.find(c => c.id === activeTab)) activeTab = state.categorias[0].id;
+    state.categorias.forEach((c, idx) => {
+      const count = state.items.filter(i => i.categoria === c.id && i.status === "pendente").length;
+      const btn = document.createElement("button");
+      btn.className = "tab" + (c.id === activeTab ? " active" : "");
+      btn.innerHTML = `<span>${escapeHtml(c.icon || "•")}</span> ${escapeHtml(c.label)} <span class="count">${count}</span>`;
+      btn.onclick = () => {
+        if (btn.classList.contains("dragging")) return;
+        activeTab = c.id; renderAll();
+      };
+      attachTabDnD(btn, c, idx);
+      el.appendChild(btn);
+    });
+  }
+
+  function fmtDateTime(d, h) {
+    if (!d && !h) return "Sem data";
+    const parts = [];
+    if (d) { const [yy,mm,dd] = d.split("-"); parts.push(`${dd}/${mm}/${yy}`); }
+    if (h) parts.push(h);
+    return parts.join(" às ");
+  }
+  function whenClass(d) {
+    if (!d) return "";
+    const today = new Date(); today.setHours(0,0,0,0);
+    const dt = new Date(d + "T00:00:00");
+    if (dt < today) return "overdue";
+    if (dt.getTime() === today.getTime()) return "today";
+    return "";
+  }
+
+  // ========== FILTER ==========
+  function renderFilterStatus() {
+    const sel = document.getElementById("filterStatus");
+    const current = sel.value;
+    sel.innerHTML = '<option value="todos">Todos</option>';
+    state.statuses.forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s.value; opt.textContent = s.label;
+      sel.appendChild(opt);
+    });
+    sel.value = (current && (current === "todos" || state.statuses.some(s => s.value === current))) ? current : "todos";
+  }
+
+  // ========== LIST ==========
+  function renderList() {
+    renderFilterStatus();
+    const filterStatus = document.getElementById("filterStatus").value;
+    const sortBy = document.getElementById("sortBy").value;
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+    let items = state.items.filter(i => i.categoria === activeTab);
+    if (filterStatus !== "todos") items = items.filter(i => i.status === filterStatus);
+    if (sortBy === "manual") {
+      items.sort((a,b) => (a.ordem ?? 9999) - (b.ordem ?? 9999));
+    } else if (sortBy === "data") {
+      items.sort((a,b) => {
+        const da = (a.data || "9999-99-99") + "T" + (a.hora || "23:59");
+        const db = (b.data || "9999-99-99") + "T" + (b.hora || "23:59");
+        return da.localeCompare(db);
+      });
+    } else if (sortBy === "nome") {
+      items.sort((a,b) => (a.nome || "").localeCompare(b.nome || "", "pt-BR"));
+    } else if (sortBy === "criado") {
+      items.sort((a,b) => b.criado - a.criado);
+    }
+    if (items.length === 0) {
+      const cat = state.categorias.find(c => c.id === activeTab);
+      const icon = cat ? cat.icon : "•";
+      const label = cat ? cat.label : "—";
+      list.innerHTML = `<div class="empty"><p style="font-size:32px;">${escapeHtml(icon)}</p><p><strong>Nenhum item em ${escapeHtml(label)}</strong></p><p>Clique em <em>+ Adicionar nesta aba</em> para começar.</p></div>`;
+      return;
+    }
+    items.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.dataset.id = item.id;
+      const wCls = whenClass(item.data);
+      const sDef = getStatusDef(item.status);
+      let statusOptions = state.statuses.map(s =>
+        `<option value="${s.value}" ${s.value === item.status ? "selected" : ""}>${escapeHtml(s.label)}</option>`
+      ).join("");
+      if (item.status && !state.statuses.some(s => s.value === item.status)) {
+        statusOptions += `<option value="${item.status}" selected>${escapeHtml(item.status)}</option>`;
+      }
+      const extras = (state.customFields || [])
+        .filter(f => item.extra && item.extra[f.id])
+        .map(f => `<span class="extra"><span class="lbl">${escapeHtml(f.label)}:</span>${escapeHtml(item.extra[f.id])}</span>`)
+        .join("");
+      card.innerHTML = `
+        <div class="drag-handle" title="Arraste para reordenar">⋮⋮</div>
+        <div class="main-line">
+          <span class="name">${escapeHtml(item.nome || "(sem nome)")}</span>
+          <span class="when ${wCls}">${fmtDateTime(item.data, item.hora)}</span>
+          <select class="status" style="background-color:${sDef.bg}; color:${sDef.color};" title="Mudar status" data-action="status" data-id="${item.id}">${statusOptions}</select>
+        </div>
+        <div class="subject">${escapeHtml(item.assunto || "")}</div>
+        ${extras ? `<div class="extras">${extras}</div>` : ""}
+        <div class="actions">
+          <button class="icon-btn" title="Marcar feito/pendente" data-action="toggle" data-id="${item.id}">✓</button>
+          <button class="icon-btn" title="Editar" data-action="edit" data-id="${item.id}">✎</button>
+          <button class="icon-btn" title="Excluir" data-action="delete" data-id="${item.id}">🗑</button>
+        </div>
+      `;
+      attachCardDnD(card, item);
+      list.appendChild(card);
+    });
+    list.querySelectorAll("[data-action]").forEach(b => {
+      const action = b.getAttribute("data-action");
+      const id = b.getAttribute("data-id");
+      if (action === "status") {
+        b.onchange = () => {
+          const it = state.items.find(i => i.id === id);
+          if (!it) return;
+          it.status = b.value;
+          saveState();
+          renderAll();
+        };
+      } else {
+        b.onclick = () => {
+          if (action === "edit") openModal(id);
+          else if (action === "delete") {
+            if (confirm("Excluir este item?")) {
+              state.items = state.items.filter(i => i.id !== id);
+              saveState(); renderAll();
+            }
+          } else if (action === "toggle") {
+            const it = state.items.find(i => i.id === id);
+            if (!it) return;
+            it.status = it.status === "feito" ? "pendente" : "feito";
+            saveState(); renderAll();
+          }
+        };
+      }
+    });
+  }
+
+  function updateSubline() {
+    const total = state.items.length;
+    const pendentes = state.items.filter(i => i.status === "pendente").length;
+    document.getElementById("subline").textContent = `${total} itens no total · ${pendentes} pendentes`;
+  }
+  function renderAll() { renderTabs(); renderList(); updateSubline(); }
+
+  // ========== DRAG & DROP CARDS ==========
+  function attachCardDnD(card, item) {
+    const handle = card.querySelector(".drag-handle");
+    handle.addEventListener("mousedown", () => { card.draggable = true; });
+    handle.addEventListener("touchstart", () => { card.draggable = true; }, { passive: true });
+    card.addEventListener("dragend", () => {
+      card.draggable = false;
+      card.classList.remove("dragging");
+      document.querySelectorAll(".card.drop-above, .card.drop-below").forEach(c => c.classList.remove("drop-above", "drop-below"));
+      dragSrcItemId = null;
+    });
+    card.addEventListener("dragstart", (e) => {
+      dragSrcItemId = item.id;
+      card.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      try { e.dataTransfer.setData("text/plain", item.id); } catch(_){}
+    });
+    card.addEventListener("dragover", (e) => {
+      if (!dragSrcItemId || dragSrcItemId === item.id) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      const rect = card.getBoundingClientRect();
+      const above = e.clientY < rect.top + rect.height / 2;
+      card.classList.toggle("drop-above", above);
+      card.classList.toggle("drop-below", !above);
+    });
+    card.addEventListener("dragleave", () => { card.classList.remove("drop-above", "drop-below"); });
+    card.addEventListener("drop", (e) => {
+      e.preventDefault();
+      if (!dragSrcItemId || dragSrcItemId === item.id) return;
+      const rect = card.getBoundingClientRect();
+      const insertAfter = e.clientY >= rect.top + rect.height / 2;
+      reorderItem(dragSrcItemId, item.id, insertAfter);
+      card.classList.remove("drop-above", "drop-below");
+      if (document.getElementById("sortBy").value !== "manual") {
+        document.getElementById("sortBy").value = "manual";
+      }
+      renderAll();
+    });
+  }
+  function reorderItem(draggedId, targetId, insertAfter) {
+    const dragged = state.items.find(i => i.id === draggedId);
+    const target = state.items.find(i => i.id === targetId);
+    if (!dragged || !target || dragged.id === target.id) return;
+    dragged.categoria = target.categoria;
+    const catItems = state.items
+      .filter(i => i.categoria === target.categoria && i.id !== dragged.id)
+      .sort((a,b) => (a.ordem ?? 9999) - (b.ordem ?? 9999));
+    const tIdx = catItems.findIndex(i => i.id === target.id);
+    const insertIdx = insertAfter ? tIdx + 1 : tIdx;
+    catItems.splice(insertIdx, 0, dragged);
+    catItems.forEach((it, i) => it.ordem = i);
+    saveState();
+  }
+  function attachTabDnD(tabEl, cat, idx) {
+    tabEl.draggable = true;
+    tabEl.addEventListener("dragstart", (e) => {
+      dragSrcCatId = cat.id;
+      tabEl.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      try { e.dataTransfer.setData("text/plain", "cat:" + cat.id); } catch(_){}
+    });
+    tabEl.addEventListener("dragend", () => {
+      tabEl.classList.remove("dragging");
+      document.querySelectorAll(".tab.drop-target").forEach(t => t.classList.remove("drop-target"));
+      dragSrcCatId = null;
+    });
+    tabEl.addEventListener("dragover", (e) => {
+      if (!dragSrcCatId || dragSrcCatId === cat.id) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      tabEl.classList.add("drop-target");
+    });
+    tabEl.addEventListener("dragleave", () => { tabEl.classList.remove("drop-target"); });
+    tabEl.addEventListener("drop", (e) => {
+      e.preventDefault();
+      if (!dragSrcCatId || dragSrcCatId === cat.id) return;
+      const fromIdx = state.categorias.findIndex(c => c.id === dragSrcCatId);
+      const toIdx = state.categorias.findIndex(c => c.id === cat.id);
+      if (fromIdx < 0 || toIdx < 0) return;
+      const [moved] = state.categorias.splice(fromIdx, 1);
+      state.categorias.splice(toIdx, 0, moved);
+      saveState();
+      renderAll();
+    });
+  }
+
+  // ========== ITEM MODAL ==========
+  function fillCatSelect(sel) {
+    sel.innerHTML = "";
+    state.categorias.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.id; opt.textContent = `${c.icon || "•"}  ${c.label}`;
+      sel.appendChild(opt);
+    });
+  }
+  function fillStatusSelect(currentValue) {
+    const sel = document.getElementById("fStatus");
+    sel.innerHTML = "";
+    state.statuses.forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s.value; opt.textContent = s.label;
+      sel.appendChild(opt);
+    });
+    if (currentValue && state.statuses.some(s => s.value === currentValue)) sel.value = currentValue;
+    else if (state.statuses.length) sel.value = state.statuses[0].value;
+  }
+  function applyFieldLabels() {
+    document.getElementById("fNomeLabel").textContent = state.fieldLabels.nome;
+    document.getElementById("fDataLabel").textContent = state.fieldLabels.data;
+    document.getElementById("fHoraLabel").textContent = state.fieldLabels.hora;
+    document.getElementById("fAssuntoLabel").textContent = state.fieldLabels.assunto;
+  }
+  function renderCustomFieldsInModal(item) {
+    const wrap = document.getElementById("customFieldsContainer");
+    wrap.innerHTML = "";
+    (state.customFields || []).forEach(f => {
+      const div = document.createElement("div");
+      div.className = "field";
+      const value = (item && item.extra && item.extra[f.id]) || "";
+      const input = f.type === "textarea"
+        ? `<textarea data-fid="${escapeHtml(f.id)}">${escapeHtml(value)}</textarea>`
+        : `<input data-fid="${escapeHtml(f.id)}" type="text" value="${escapeHtml(value)}">`;
+      div.innerHTML = `<label>${escapeHtml(f.label)}</label>${input}`;
+      wrap.appendChild(div);
+    });
+  }
+  function openModal(id) {
+    editingId = id || null;
+    applyFieldLabels();
+    fillCatSelect(document.getElementById("fCategoria"));
+    let item = null;
+    if (id) {
+      item = state.items.find(i => i.id === id);
+      if (!item) return;
+      document.getElementById("modalTitle").textContent = "Editar item";
+      document.getElementById("fCategoria").value = item.categoria;
+      document.getElementById("fNome").value = item.nome || "";
+      document.getElementById("fData").value = item.data || "";
+      document.getElementById("fHora").value = item.hora || "";
+      document.getElementById("fAssunto").value = item.assunto || "";
+      fillStatusSelect(item.status);
+      document.getElementById("deleteBtn").style.display = "inline-block";
+    } else {
+      document.getElementById("modalTitle").textContent = "Novo item";
+      document.getElementById("fCategoria").value = activeTab;
+      document.getElementById("fNome").value = "";
+      document.getElementById("fData").value = "";
+      document.getElementById("fHora").value = "";
+      document.getElementById("fAssunto").value = "";
+      fillStatusSelect(null);
+      document.getElementById("deleteBtn").style.display = "none";
+    }
+    renderCustomFieldsInModal(item);
+    document.getElementById("modalBg").classList.add("open");
+    setTimeout(() => document.getElementById("fNome").focus(), 50);
+  }
+  function closeModal() {
+    document.getElementById("modalBg").classList.remove("open");
+    editingId = null;
+  }
+  function saveModal() {
+    const data = {
+      categoria: document.getElementById("fCategoria").value,
+      nome: document.getElementById("fNome").value.trim(),
+      data: document.getElementById("fData").value,
+      hora: document.getElementById("fHora").value,
+      assunto: document.getElementById("fAssunto").value.trim(),
+      status: document.getElementById("fStatus").value
+    };
+    if (!data.nome) { alert("Informe o " + state.fieldLabels.nome.toLowerCase() + "."); return; }
+    const extra = {};
+    document.querySelectorAll("#customFieldsContainer [data-fid]").forEach(inp => {
+      const v = inp.value.trim();
+      if (v) extra[inp.getAttribute("data-fid")] = v;
+    });
+    if (editingId) {
+      const it = state.items.find(i => i.id === editingId);
+      const oldCat = it.categoria;
+      Object.assign(it, data);
+      it.extra = extra;
+      if (oldCat !== data.categoria) {
+        const maxOrd = state.items.filter(i => i.categoria === data.categoria && i.id !== it.id).reduce((m, x) => Math.max(m, x.ordem ?? -1), -1);
+        it.ordem = maxOrd + 1;
+      }
+    } else {
+      const maxOrd = state.items.filter(i => i.categoria === data.categoria).reduce((m, x) => Math.max(m, x.ordem ?? -1), -1);
+      state.items.push({ id: uid(), criado: Date.now(), ordem: maxOrd + 1, extra, ...data });
+    }
+    saveState();
+    closeModal();
+    if (data.categoria !== activeTab) activeTab = data.categoria;
+    renderAll();
+  }
+
+  // ========== SETTINGS MODAL ==========
+  function openSettings(section) {
+    switchSettingsSection(section || "categorias");
+    renderSettingsAll();
+    document.getElementById("settingsModalBg").classList.add("open");
+  }
+  function closeSettings() { document.getElementById("settingsModalBg").classList.remove("open"); }
+  function switchSettingsSection(id) {
+    document.querySelectorAll(".settings-nav button").forEach(b => b.classList.toggle("active", b.getAttribute("data-section") === id));
+    document.querySelectorAll(".settings-section").forEach(s => s.classList.toggle("active", s.id === "settingsSection_" + id));
+  }
+  function renderSettingsAll() {
+    renderSettingsCategorias();
+    renderSettingsStatuses();
+    renderSettingsFields();
+  }
+
+  // ---- Categorias ----
+  function renderSettingsCategorias() {
+    const el = document.getElementById("catList");
+    el.innerHTML = "";
+    state.categorias.forEach((c, idx) => {
+      const row = document.createElement("div");
+      row.className = "row-item";
+      row.innerHTML = `
+        <input class="icon-input" maxlength="3" value="${escapeHtml(c.icon || "")}" data-i="${idx}" data-field="icon">
+        <input class="label-input" type="text" value="${escapeHtml(c.label)}" data-i="${idx}" data-field="label">
+        <button class="icon-btn" title="Subir" data-action="up" data-i="${idx}">↑</button>
+        <button class="icon-btn" title="Descer" data-action="down" data-i="${idx}">↓</button>
+        <button class="icon-btn" title="Remover" data-action="remove" data-i="${idx}">🗑</button>
+      `;
+      el.appendChild(row);
+    });
+    el.querySelectorAll("input").forEach(inp => {
+      inp.oninput = () => {
+        const i = +inp.getAttribute("data-i");
+        const field = inp.getAttribute("data-field");
+        state.categorias[i][field] = inp.value;
+        saveState();
+        renderTabs(); updateSubline();
+      };
+    });
+    el.querySelectorAll("[data-action]").forEach(b => {
+      b.onclick = () => {
+        const i = +b.getAttribute("data-i");
+        const action = b.getAttribute("data-action");
+        if (action === "up" && i > 0) { [state.categorias[i-1], state.categorias[i]] = [state.categorias[i], state.categorias[i-1]]; }
+        else if (action === "down" && i < state.categorias.length - 1) { [state.categorias[i+1], state.categorias[i]] = [state.categorias[i], state.categorias[i+1]]; }
+        else if (action === "remove") {
+          const c = state.categorias[i];
+          const usedBy = state.items.filter(it => it.categoria === c.id).length;
+          let msg = `Remover a categoria "${c.label}"?`;
+          if (usedBy > 0) msg += `\n\nAtenção: ${usedBy} item(ns) estão nessa categoria e ficarão sem categoria. Continuar?`;
+          if (!confirm(msg)) return;
+          state.categorias.splice(i,1);
+        } else return;
+        saveState();
+        renderSettingsCategorias();
+        renderAll();
+      };
+    });
+  }
+  function addNewCat() {
+    const icon = document.getElementById("newCatIcon").value.trim() || "•";
+    const label = document.getElementById("newCatLabel").value.trim();
+    if (!label) { alert("Informe um nome para a categoria."); return; }
+    let id = slugify(label);
+    while (state.categorias.find(c => c.id === id)) id = id + "_" + uid().slice(0,3);
+    state.categorias.push({ id, label, icon });
+    saveState();
+    renderSettingsCategorias();
+    renderAll();
+    document.getElementById("newCatIcon").value = "";
+    document.getElementById("newCatLabel").value = "";
+    document.getElementById("newCatLabel").focus();
+  }
+
+  // ---- Statuses ----
+  function renderSettingsStatuses() {
+    const el = document.getElementById("statusList");
+    el.innerHTML = "";
+    state.statuses.forEach((s, idx) => {
+      const row = document.createElement("div");
+      row.className = "row-item";
+      row.innerHTML = `
+        <button class="swatch" style="background:${s.bg};" title="Mudar cor" data-action="color" data-i="${idx}"></button>
+        <input class="label-input" type="text" value="${escapeHtml(s.label)}" data-i="${idx}">
+        <button class="icon-btn" title="Subir" data-action="up" data-i="${idx}">↑</button>
+        <button class="icon-btn" title="Descer" data-action="down" data-i="${idx}">↓</button>
+        <button class="icon-btn" title="Remover" data-action="remove" data-i="${idx}">🗑</button>
+      `;
+      el.appendChild(row);
+    });
+    el.querySelectorAll("input").forEach(inp => {
+      inp.oninput = () => {
+        const i = +inp.getAttribute("data-i");
+        state.statuses[i].label = inp.value;
+        saveState();
+        renderList();
+      };
+    });
+    el.querySelectorAll("[data-action]").forEach(b => {
+      b.onclick = () => {
+        const i = +b.getAttribute("data-i");
+        const action = b.getAttribute("data-action");
+        if (action === "color") {
+          openColorPicker((c) => {
+            state.statuses[i].bg = c.bg;
+            state.statuses[i].color = c.color;
+            saveState();
+            renderSettingsStatuses();
+            renderList();
+          });
+        } else if (action === "up" && i > 0) {
+          [state.statuses[i-1], state.statuses[i]] = [state.statuses[i], state.statuses[i-1]];
+          saveState(); renderSettingsStatuses(); renderList();
+        } else if (action === "down" && i < state.statuses.length - 1) {
+          [state.statuses[i+1], state.statuses[i]] = [state.statuses[i], state.statuses[i+1]];
+          saveState(); renderSettingsStatuses(); renderList();
+        } else if (action === "remove") {
+          const s = state.statuses[i];
+          const usedBy = state.items.filter(it => it.status === s.value).length;
+          let msg = `Remover o status "${s.label}"?`;
+          if (usedBy > 0) msg += `\n\nAtenção: ${usedBy} item(ns) estão com este status. Eles vão continuar com o valor mas sem cor. Continuar?`;
+          if (!confirm(msg)) return;
+          state.statuses.splice(i, 1);
+          saveState();
+          renderSettingsStatuses();
+          renderList();
+        }
+      };
+    });
+  }
+  function addNewStatus() {
+    const label = document.getElementById("newStatusLabel").value.trim();
+    if (!label) { alert("Informe um nome para o status."); return; }
+    let value = slugify(label);
+    while (state.statuses.find(s => s.value === value)) value = value + "_" + uid().slice(0,3);
+    const used = state.statuses.map(s => s.bg);
+    const free = COLOR_PALETTE.find(c => !used.includes(c.bg)) || COLOR_PALETTE[0];
+    state.statuses.push({ value, label, bg: free.bg, color: free.color });
+    saveState();
+    renderSettingsStatuses();
+    renderList();
+    document.getElementById("newStatusLabel").value = "";
+    document.getElementById("newStatusLabel").focus();
+  }
+
+  // ---- Color Picker ----
+  function openColorPicker(callback) {
+    colorPickerCallback = callback;
+    const grid = document.getElementById("colorPalette");
+    grid.innerHTML = "";
+    COLOR_PALETTE.forEach(c => {
+      const btn = document.createElement("button");
+      btn.style.cssText = `background:${c.bg}; color:${c.color}; border:1px solid #d4d1c9; padding: 14px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit;`;
+      btn.textContent = c.name;
+      btn.onclick = () => {
+        if (colorPickerCallback) colorPickerCallback(c);
+        closeColorPicker();
+      };
+      grid.appendChild(btn);
+    });
+    document.getElementById("colorPickerBg").classList.add("open");
+  }
+  function closeColorPicker() {
+    document.getElementById("colorPickerBg").classList.remove("open");
+    colorPickerCallback = null;
+  }
+
+  // ---- Campos ----
+  function renderSettingsFields() {
+    document.getElementById("labelNome").value = state.fieldLabels.nome;
+    document.getElementById("labelData").value = state.fieldLabels.data;
+    document.getElementById("labelHora").value = state.fieldLabels.hora;
+    document.getElementById("labelAssunto").value = state.fieldLabels.assunto;
+
+    const el = document.getElementById("customFieldsList");
+    el.innerHTML = "";
+    if (state.customFields.length === 0) {
+      el.innerHTML = '<p class="help-text" style="font-style:italic;">Nenhum campo personalizado ainda. Adicione abaixo.</p>';
+    } else {
+      state.customFields.forEach((f, idx) => {
+        const row = document.createElement("div");
+        row.className = "row-item";
+        row.innerHTML = `
+          <input class="label-input" type="text" value="${escapeHtml(f.label)}" data-fi="${idx}" data-field="label">
+          <select data-fi="${idx}" data-field="type" style="width: 130px;">
+            <option value="text" ${f.type === "text" ? "selected" : ""}>Texto curto</option>
+            <option value="textarea" ${f.type === "textarea" ? "selected" : ""}>Texto longo</option>
+          </select>
+          <button class="icon-btn" title="Subir" data-action="up" data-fi="${idx}">↑</button>
+          <button class="icon-btn" title="Descer" data-action="down" data-fi="${idx}">↓</button>
+          <button class="icon-btn" title="Remover" data-action="remove" data-fi="${idx}">🗑</button>
+        `;
+        el.appendChild(row);
+      });
+      el.querySelectorAll("input,select").forEach(inp => {
+        const handler = () => {
+          const i = +inp.getAttribute("data-fi");
+          state.customFields[i][inp.getAttribute("data-field")] = inp.value;
+          saveState();
+          renderList();
+        };
+        inp.oninput = handler;
+        inp.onchange = handler;
+      });
+      el.querySelectorAll("[data-action]").forEach(b => {
+        b.onclick = () => {
+          const i = +b.getAttribute("data-fi");
+          const action = b.getAttribute("data-action");
+          if (action === "up" && i > 0) { [state.customFields[i-1], state.customFields[i]] = [state.customFields[i], state.customFields[i-1]]; }
+          else if (action === "down" && i < state.customFields.length - 1) { [state.customFields[i+1], state.customFields[i]] = [state.customFields[i], state.customFields[i+1]]; }
+          else if (action === "remove") {
+            if (!confirm(`Remover o campo "${state.customFields[i].label}"? Os valores já preenchidos serão apagados de todos os itens.`)) return;
+            const removedId = state.customFields[i].id;
+            state.items.forEach(it => { if (it.extra && it.extra[removedId]) delete it.extra[removedId]; });
+            state.customFields.splice(i, 1);
+          } else return;
+          saveState();
+          renderSettingsFields();
+          renderList();
+        };
+      });
+    }
+  }
+  function bindFieldLabelInputs() {
+    [["Nome","nome"],["Data","data"],["Hora","hora"],["Assunto","assunto"]].forEach(([name, key]) => {
+      const el = document.getElementById("label" + name);
+      el.oninput = () => {
+        state.fieldLabels[key] = el.value || DEFAULT_FIELDS[key];
+        saveState();
+      };
+    });
+  }
+  function addNewField() {
+    const label = document.getElementById("newFieldLabel").value.trim();
+    const type = document.getElementById("newFieldType").value;
+    if (!label) { alert("Informe um nome para o campo."); return; }
+    let id = slugify(label);
+    while (state.customFields.find(f => f.id === id)) id = id + "_" + uid().slice(0,3);
+    state.customFields.push({ id, label, type });
+    saveState();
+    renderSettingsFields();
+    renderList();
+    document.getElementById("newFieldLabel").value = "";
+    document.getElementById("newFieldLabel").focus();
+  }
+
+  // ========== WIRING ==========
+  document.getElementById("newBtn").onclick = () => openModal(null);
+  document.getElementById("addBtnTop").onclick = () => openModal(null);
+  document.getElementById("cancelBtn").onclick = closeModal;
+  document.getElementById("saveBtn").onclick = saveModal;
+  document.getElementById("deleteBtn").onclick = () => {
+    if (!editingId) return;
+    if (confirm("Excluir este item?")) {
+      state.items = state.items.filter(i => i.id !== editingId);
+      saveState();
+      closeModal();
+      renderAll();
+    }
+  };
+  document.getElementById("modalBg").onclick = (e) => { if (e.target.id === "modalBg") closeModal(); };
+
+  document.getElementById("settingsBtn").onclick = () => openSettings();
+  document.getElementById("settingsCloseBtn").onclick = closeSettings;
+  document.getElementById("settingsModalBg").onclick = (e) => { if (e.target.id === "settingsModalBg") closeSettings(); };
+  document.querySelectorAll(".settings-nav button").forEach(b => {
+    b.onclick = () => switchSettingsSection(b.getAttribute("data-section"));
+  });
+  document.getElementById("addCatBtn").onclick = addNewCat;
+  document.getElementById("newCatLabel").addEventListener("keydown", (e) => { if (e.key === "Enter") addNewCat(); });
+  document.getElementById("addStatusBtn").onclick = addNewStatus;
+  document.getElementById("newStatusLabel").addEventListener("keydown", (e) => { if (e.key === "Enter") addNewStatus(); });
+  document.getElementById("addFieldBtn").onclick = addNewField;
+  document.getElementById("newFieldLabel").addEventListener("keydown", (e) => { if (e.key === "Enter") addNewField(); });
+
+  document.getElementById("colorPickerCancelBtn").onclick = closeColorPicker;
+  document.getElementById("colorPickerBg").onclick = (e) => { if (e.target.id === "colorPickerBg") closeColorPicker(); };
+
+  bindFieldLabelInputs();
+
+  document.getElementById("filterStatus").onchange = renderList;
+  document.getElementById("sortBy").onchange = renderList;
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { closeModal(); closeSettings(); closeColorPicker(); }
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
