@@ -114,6 +114,7 @@
   <div>
     <h1>Painel do Escritório</h1>
     <div class="sub" id="subline">Carregando…</div>
+    <div class="sub" id="syncLine" style="cursor:pointer;"></div>
   </div>
   <div class="header-actions">
     <button class="btn" id="settingsBtn" title="Configurar categorias, status e campos">⚙ Configurações</button>
@@ -190,6 +191,7 @@
       <button data-section="categorias" class="active">Categorias</button>
       <button data-section="statuses">Status</button>
       <button data-section="fields">Campos</button>
+      <button data-section="sync">Sincronização</button>
     </div>
 
     <div id="settingsSection_categorias" class="settings-section active">
@@ -236,6 +238,23 @@
       </div>
     </div>
 
+    <div id="settingsSection_sync" class="settings-section">
+      <p class="help-text">Guarda seus dados de verdade num repositório privado no GitHub, em vez de só no navegador. Assim, se algo acontecer com este navegador (limpar cookies, trocar de perfil, formatar o PC), os dados continuam salvos — e você consegue abrir este painel em outros aparelhos (celular, tablet) com os mesmos dados, colando o mesmo token ali.</p>
+      <div id="syncStatusBox" style="background:#f3f2ee; border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:13px;"></div>
+      <div class="field">
+        <label for="ghTokenInput">Token de acesso do GitHub</label>
+        <input id="ghTokenInput" type="password" placeholder="github_pat_...">
+      </div>
+      <div class="add-row" style="border-top:none; padding-top:0; margin-top:0;">
+        <button class="btn primary small" id="ghConnectBtn">Salvar e conectar</button>
+        <button class="btn small" id="ghTestBtn">Testar conexão</button>
+        <button class="btn danger small" id="ghDisconnectBtn">Desconectar</button>
+      </div>
+      <h3>Backup manual</h3>
+      <p class="help-text">Além da sincronização automática, você pode baixar uma cópia de segurança dos seus dados a qualquer momento.</p>
+      <button class="btn small" id="downloadBackupBtn">⬇ Baixar backup (.json)</button>
+    </div>
+
     <div class="modal-actions">
       <button class="btn" id="settingsCloseBtn">Fechar</button>
     </div>
@@ -256,6 +275,17 @@
 <script>
 (function() {
   const STORAGE_KEY = "painel_escritorio_v2";
+
+  // ===== Sincronização com GitHub (repositório privado) =====
+  const GH_OWNER = "leonamegas";
+  const GH_REPO = "escritorio-dados";
+  const GH_PATH = "dados.json";
+  const GH_TOKEN_KEY = "painel_gh_token";
+  let ghToken = localStorage.getItem(GH_TOKEN_KEY) || "";
+  let ghSha = null;
+  let syncTimer = null;
+  let syncState = "off"; // off | syncing | ok | error
+  let syncMsg = "";
 
   const DEFAULT_CATEGORIAS = [
     { id: "atendimentos", label: "Atendimentos", icon: "📞" },
@@ -307,39 +337,157 @@
   let dragSrcCatId = null;
   let colorPickerCallback = null;
 
+  function normalizeState(s) {
+    s = s && typeof s === "object" ? s : {};
+    if (!s.items || !Array.isArray(s.items)) s.items = [];
+    if (!s.categorias || !Array.isArray(s.categorias) || s.categorias.length === 0) {
+      s.categorias = JSON.parse(JSON.stringify(DEFAULT_CATEGORIAS));
+    }
+    if (!s.statuses || !Array.isArray(s.statuses) || s.statuses.length === 0) {
+      s.statuses = JSON.parse(JSON.stringify(DEFAULT_STATUSES));
+    }
+    if (!s.fieldLabels || typeof s.fieldLabels !== "object") {
+      s.fieldLabels = { ...DEFAULT_FIELDS };
+    } else {
+      s.fieldLabels = { ...DEFAULT_FIELDS, ...s.fieldLabels };
+    }
+    if (!s.customFields || !Array.isArray(s.customFields)) s.customFields = [];
+    return s;
+  }
   function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      let s = raw ? JSON.parse(raw) : {};
-      if (!s.items) s.items = [];
-      if (!s.categorias || !Array.isArray(s.categorias) || s.categorias.length === 0) {
-        s.categorias = JSON.parse(JSON.stringify(DEFAULT_CATEGORIAS));
-      }
-      if (!s.statuses || !Array.isArray(s.statuses) || s.statuses.length === 0) {
-        s.statuses = JSON.parse(JSON.stringify(DEFAULT_STATUSES));
-      }
-      if (!s.fieldLabels || typeof s.fieldLabels !== "object") {
-        s.fieldLabels = { ...DEFAULT_FIELDS };
-      } else {
-        s.fieldLabels = { ...DEFAULT_FIELDS, ...s.fieldLabels };
-      }
-      if (!s.customFields || !Array.isArray(s.customFields)) s.customFields = [];
-      return s;
+      return normalizeState(raw ? JSON.parse(raw) : {});
     } catch(e) {
-      return {
-        items: [],
-        categorias: JSON.parse(JSON.stringify(DEFAULT_CATEGORIAS)),
-        statuses: JSON.parse(JSON.stringify(DEFAULT_STATUSES)),
-        fieldLabels: { ...DEFAULT_FIELDS },
-        customFields: []
-      };
+      return normalizeState({});
     }
   }
-  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    scheduleSync();
+  }
+
+  // ---- Codificação UTF-8 seguro para base64 (emojis nas categorias, acentos, etc.) ----
+  function b64EncodeUnicode(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p) => String.fromCharCode("0x" + p)));
+  }
+  function b64DecodeUnicode(str) {
+    return decodeURIComponent(atob(str).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join(""));
+  }
+
+  function ghApiUrl() {
+    return `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`;
+  }
+  function ghHeaders() {
+    return { "Authorization": "Bearer " + ghToken, "Accept": "application/vnd.github+json" };
+  }
+  function setSyncState(s, msg) {
+    syncState = s;
+    syncMsg = msg || "";
+    renderSyncUI();
+  }
+  async function ghFetchRemote() {
+    try {
+      const res = await fetch(ghApiUrl() + "?t=" + Date.now(), { headers: ghHeaders() });
+      if (res.status === 404) { ghSha = null; return { notFound: true }; }
+      if (res.status === 401 || res.status === 403) {
+        setSyncState("error", "Token inválido ou sem permissão.");
+        return null;
+      }
+      if (!res.ok) { setSyncState("error", "Erro ao buscar (HTTP " + res.status + ")."); return null; }
+      const data = await res.json();
+      ghSha = data.sha;
+      const json = b64DecodeUnicode((data.content || "").replace(/\n/g, ""));
+      return { data: JSON.parse(json) };
+    } catch(e) {
+      setSyncState("error", "Sem conexão com o GitHub.");
+      return null;
+    }
+  }
+  async function ghPushRemote() {
+    if (!ghToken) return;
+    setSyncState("syncing");
+    try {
+      const body = {
+        message: "Atualização do painel — " + new Date().toISOString(),
+        content: b64EncodeUnicode(JSON.stringify(state, null, 2))
+      };
+      if (ghSha) body.sha = ghSha;
+      const res = await fetch(ghApiUrl(), {
+        method: "PUT",
+        headers: { ...ghHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      if (res.status === 401 || res.status === 403) {
+        setSyncState("error", "Token inválido ou sem permissão.");
+        return;
+      }
+      if (res.status === 409) {
+        // Conflito de versão (editado em outro aparelho) — busca a versão mais nova e tenta de novo.
+        const remote = await ghFetchRemote();
+        if (remote && !remote.notFound) return ghPushRemote();
+        return;
+      }
+      if (!res.ok) { setSyncState("error", "Erro ao salvar (HTTP " + res.status + ")."); return; }
+      const data = await res.json();
+      ghSha = data.content.sha;
+      setSyncState("ok");
+    } catch(e) {
+      setSyncState("error", "Sem conexão com o GitHub.");
+    }
+  }
+  function scheduleSync() {
+    if (!ghToken) return;
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(ghPushRemote, 1200);
+  }
+  async function initSync() {
+    if (!ghToken) { setSyncState("off"); return; }
+    setSyncState("syncing");
+    const remote = await ghFetchRemote();
+    if (!remote) return; // erro já tratado dentro de ghFetchRemote
+    if (remote.notFound) {
+      await ghPushRemote(); // primeiro aparelho a conectar: cria o arquivo com os dados atuais
+    } else {
+      state = normalizeState(remote.data);
+      ensureOrdens();
+      activeTab = state.categorias[0] ? state.categorias[0].id : null;
+      renderAll();
+      setSyncState("ok");
+    }
+  }
+  function renderSyncUI() {
+    const line = document.getElementById("syncLine");
+    if (line) {
+      const map = {
+        off: "⚪ Sem sincronização — dados só neste navegador",
+        syncing: "🔄 Sincronizando…",
+        ok: "🟢 Sincronizado com o GitHub",
+        error: "🔴 Erro na sincronização — clique em Configurações"
+      };
+      line.textContent = map[syncState] || "";
+      line.onclick = () => openSettings("sync");
+    }
+    renderSyncSettingsSection();
+  }
+  function renderSyncSettingsSection() {
+    const box = document.getElementById("syncStatusBox");
+    if (!box) return;
+    const map = {
+      off: { text: "Ainda não conectado neste aparelho.", color: "#555" },
+      syncing: { text: "Sincronizando…", color: "#92400e" },
+      ok: { text: "Conectado e sincronizado.", color: "#166534" },
+      error: { text: "Erro: " + (syncMsg || "falha desconhecida"), color: "#b91c1c" }
+    };
+    const m = map[syncState] || map.off;
+    box.innerHTML = `<strong style="color:${m.color};">${escapeHtml(m.text)}</strong>`;
+    const input = document.getElementById("ghTokenInput");
+    if (input && ghToken && document.activeElement !== input) input.value = ghToken;
+  }
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
   function slugify(s) {
     return s.toLowerCase()
-      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || ("x_" + uid());
   }
   function escapeHtml(s) {
@@ -724,6 +872,7 @@
     renderSettingsCategorias();
     renderSettingsStatuses();
     renderSettingsFields();
+    renderSyncSettingsSection();
   }
 
   // ---- Categorias ----
@@ -990,6 +1139,39 @@
   document.getElementById("colorPickerCancelBtn").onclick = closeColorPicker;
   document.getElementById("colorPickerBg").onclick = (e) => { if (e.target.id === "colorPickerBg") closeColorPicker(); };
 
+  document.getElementById("ghConnectBtn").onclick = async () => {
+    const v = document.getElementById("ghTokenInput").value.trim();
+    if (!v) { alert("Cole o token de acesso do GitHub."); return; }
+    ghToken = v;
+    localStorage.setItem(GH_TOKEN_KEY, ghToken);
+    ghSha = null;
+    await initSync();
+  };
+  document.getElementById("ghTestBtn").onclick = async () => {
+    if (!ghToken) { alert("Cole e salve um token primeiro."); return; }
+    await initSync();
+  };
+  document.getElementById("ghDisconnectBtn").onclick = () => {
+    if (!confirm("Desconectar a sincronização neste aparelho? Os dados salvos aqui localmente continuam, mas não vão mais atualizar automaticamente com o GitHub.")) return;
+    ghToken = "";
+    ghSha = null;
+    localStorage.removeItem(GH_TOKEN_KEY);
+    document.getElementById("ghTokenInput").value = "";
+    setSyncState("off");
+  };
+  document.getElementById("downloadBackupBtn").onclick = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g, "-");
+    a.href = url;
+    a.download = `painel-escritorio-backup-${ts}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   bindFieldLabelInputs();
 
   document.getElementById("filterStatus").onchange = renderList;
@@ -1000,6 +1182,8 @@
   });
 
   renderAll();
+  renderSyncUI();
+  initSync();
 })();
 </script>
 </body>
