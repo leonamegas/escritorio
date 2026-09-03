@@ -13,7 +13,9 @@
   .sub { color: #6b6b6b; font-size: 12px; margin-top: 2px; }
   .header-actions { display: flex; gap: 6px; }
 
-  .tabs { display: flex; gap: 4px; padding: 12px 20px 0; background: #ffffff; border-bottom: 1px solid #e6e3dc; overflow-x: auto; }
+  .tabs-bar { display: flex; align-items: flex-end; gap: 8px; background: #ffffff; border-bottom: 1px solid #e6e3dc; padding: 12px 20px 0; }
+  .tabs { display: flex; gap: 4px; overflow-x: auto; flex: 1; min-width: 0; }
+  .cal-tab { flex-shrink: 0; }
   .tab { padding: 8px 14px; border: 1px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; color: #555; font-size: 13px; white-space: nowrap; background: transparent; display: flex; align-items: center; gap: 6px; font-family: inherit; }
   .tab:hover { background: #f3f2ee; }
   .tab.active { background: #f7f7f5; border-color: #e6e3dc; color: #1f1f1f; font-weight: 600; margin-bottom: -1px; }
@@ -100,7 +102,35 @@
   .add-row { display: flex; gap: 6px; padding-top: 10px; border-top: 1px solid #eee; margin-top: 10px; }
   .help-text { font-size: 12px; color: #6b6b6b; margin: 0 0 10px; }
 
+  .alert-banner { display: none; align-items: center; gap: 8px; margin-bottom: 14px; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+  .alert-banner.show { display: flex; }
+  .alert-banner.overdue { background: #fde8e8; color: #b91c1c; }
+  .alert-banner.today { background: #fef3c7; color: #92400e; }
+
+  .cal-wrap { display: none; }
+  .cal-wrap.active { display: block; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+  .cal-header h2 { font-size: 16px; margin: 0; font-weight: 600; text-transform: capitalize; min-width: 140px; text-align: center; }
+  .cal-nav { display: flex; gap: 6px; align-items: center; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-dow { text-align: center; font-size: 11px; color: #6b6b6b; font-weight: 600; text-transform: uppercase; padding-bottom: 4px; }
+  .cal-day { background: #fff; border: 1px solid #e6e3dc; border-radius: 8px; min-height: 84px; padding: 6px; cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
+  .cal-day:hover { background: #f9f8f5; }
+  .cal-day.other-month { background: #fafaf9; opacity: 0.45; cursor: default; }
+  .cal-day.today-cell { border-color: #d97706; border-width: 2px; }
+  .cal-day .cal-daynum { font-size: 12px; font-weight: 600; color: #555; }
+  .cal-chip { font-size: 10.5px; padding: 2px 5px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .cal-more { font-size: 10.5px; color: #6b6b6b; padding: 2px 5px; }
+
+  .busday-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; margin-bottom: 10px; cursor: pointer; }
+  .busday-toggle input { width: auto; }
+  .busday-box { display: none; background: #f3f2ee; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+  .busday-box.show { display: block; }
+
   @media (max-width: 600px) {
+    .cal-grid { gap: 3px; }
+    .cal-day { min-height: 56px; padding: 4px; }
+    .cal-chip { font-size: 9px; }
     .card { grid-template-columns: auto 1fr; }
     .card .actions { grid-column: 2; grid-row: auto; }
     .card .main-line, .card .subject, .card .extras { grid-column: 2; }
@@ -122,24 +152,44 @@
   </div>
 </header>
 
-<nav class="tabs" id="tabs"></nav>
+<div class="tabs-bar">
+  <button class="tab cal-tab" id="calTabBtn">📅 Calendário</button>
+  <nav class="tabs" id="tabs"></nav>
+</div>
 
 <main>
-  <div class="toolbar">
-    <button class="btn" id="addBtnTop">+ Adicionar nesta aba</button>
-    <div class="filter-row">
-      <label for="filterStatus">Status:</label>
-      <select id="filterStatus"><option value="todos">Todos</option></select>
-      <label for="sortBy">Ordenar:</label>
-      <select id="sortBy">
-        <option value="manual">Manual (arrastar)</option>
-        <option value="data">Por data</option>
-        <option value="nome">Por nome</option>
-        <option value="criado">Mais recentes</option>
-      </select>
+  <div class="alert-banner" id="alertBanner"></div>
+
+  <div id="categoriaView">
+    <div class="toolbar">
+      <button class="btn" id="addBtnTop">+ Adicionar nesta aba</button>
+      <div class="filter-row">
+        <label for="filterStatus">Status:</label>
+        <select id="filterStatus"><option value="todos">Todos</option></select>
+        <label for="sortBy">Ordenar:</label>
+        <select id="sortBy">
+          <option value="manual">Manual (arrastar)</option>
+          <option value="data">Por data</option>
+          <option value="nome">Por nome</option>
+          <option value="criado">Mais recentes</option>
+        </select>
+      </div>
     </div>
+    <div id="list" class="list"></div>
   </div>
-  <div id="list" class="list"></div>
+
+  <div id="calendarioView" class="cal-wrap">
+    <div class="cal-header">
+      <div class="cal-nav">
+        <button class="btn small" id="calPrevBtn">←</button>
+        <h2 id="calMonthLabel"></h2>
+        <button class="btn small" id="calNextBtn">→</button>
+        <button class="btn small" id="calTodayBtn">Hoje</button>
+      </div>
+      <button class="btn primary" id="calNewBtn">+ Novo prazo</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
 </main>
 
 <!-- Modal de item -->
@@ -183,6 +233,60 @@
   </div>
 </div>
 
+<!-- Modal de prazo (Calendário) -->
+<div class="modal-bg" id="prazoModalBg">
+  <div class="modal">
+    <h2 id="prazoModalTitle">Novo prazo</h2>
+    <div class="field">
+      <label for="pTitulo">Título</label>
+      <input id="pTitulo" type="text" placeholder="Ex: Audiência de instrução — Processo 123">
+    </div>
+    <div class="field">
+      <label for="pTipo">Tipo</label>
+      <select id="pTipo"></select>
+    </div>
+    <label class="busday-toggle" for="pUseBusday">
+      <input type="checkbox" id="pUseBusday">
+      Calcular a data automaticamente por dias úteis
+    </label>
+    <div class="busday-box" id="busdayBox">
+      <div class="row-2">
+        <div class="field">
+          <label for="pBusdayStart">Data inicial</label>
+          <input id="pBusdayStart" type="date">
+        </div>
+        <div class="field">
+          <label for="pBusdayCount">Dias úteis</label>
+          <input id="pBusdayCount" type="number" min="1" value="15">
+        </div>
+      </div>
+      <button class="btn small" id="pCalcBtn" type="button">Calcular data final</button>
+      <p class="help-text" style="margin-top:8px; margin-bottom:0;">Conta só dias úteis (pula sábado e domingo). Feriados não entram no cálculo — confira manualmente se houver feriado no período.</p>
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label for="pData">Data</label>
+        <input id="pData" type="date">
+      </div>
+      <div class="field">
+        <label for="pHora">Hora (opcional)</label>
+        <input id="pHora" type="time">
+      </div>
+    </div>
+    <div class="field">
+      <label for="pObs">Observações</label>
+      <textarea id="pObs" placeholder="Detalhes, processo, vara, etc."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger" id="pDeleteBtn" style="display:none;">Excluir</button>
+      <div class="right">
+        <button class="btn" id="pCancelBtn">Cancelar</button>
+        <button class="btn primary" id="pSaveBtn">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Configurações -->
 <div class="modal-bg" id="settingsModalBg">
   <div class="modal wide">
@@ -191,6 +295,7 @@
       <button data-section="categorias" class="active">Categorias</button>
       <button data-section="statuses">Status</button>
       <button data-section="fields">Campos</button>
+      <button data-section="prazotypes">Tipos de Prazo</button>
       <button data-section="sync">Sincronização</button>
     </div>
 
@@ -235,6 +340,15 @@
           <option value="textarea">Texto longo</option>
         </select>
         <button class="btn primary small" id="addFieldBtn">+ Adicionar</button>
+      </div>
+    </div>
+
+    <div id="settingsSection_prazotypes" class="settings-section">
+      <p class="help-text">Tipos de prazo usados no Calendário (ex: Audiência, Prazo processual). Clique no quadradinho colorido pra escolher a cor.</p>
+      <div id="prazoTypeList"></div>
+      <div class="add-row">
+        <input id="newPrazoTypeLabel" class="label-input" type="text" placeholder="Nome do novo tipo (ex: Perícia)">
+        <button class="btn primary small" id="addPrazoTypeBtn">+ Adicionar</button>
       </div>
     </div>
 
@@ -314,6 +428,16 @@
     assunto: "Assunto / Observações"
   };
 
+  const DEFAULT_PRAZO_TYPES = [
+    { id: "audiencia",        label: "Audiência",             bg: "#fde8e8", color: "#b91c1c" },
+    { id: "prazo_processual", label: "Prazo processual",      bg: "#dbeafe", color: "#1e40af" },
+    { id: "reuniao_cliente",  label: "Reunião com cliente",   bg: "#dcfce7", color: "#166534" },
+    { id: "cobranca",         label: "Cobrança / honorários", bg: "#fef3c7", color: "#92400e" }
+  ];
+
+  const MONTH_NAMES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  const DOW_NAMES = ["dom","seg","ter","qua","qui","sex","sáb"];
+
   const COLOR_PALETTE = [
     { name: "Amarelo",      bg: "#fef3c7", color: "#92400e" },
     { name: "Verde",        bg: "#dcfce7", color: "#166534" },
@@ -336,6 +460,11 @@
   let dragSrcItemId = null;
   let dragSrcCatId = null;
   let colorPickerCallback = null;
+  let activeView = "categoria"; // categoria | calendario
+  const __today0 = new Date();
+  let calYear = __today0.getFullYear();
+  let calMonth = __today0.getMonth();
+  let editingPrazoId = null;
 
   function normalizeState(s) {
     s = s && typeof s === "object" ? s : {};
@@ -352,6 +481,10 @@
       s.fieldLabels = { ...DEFAULT_FIELDS, ...s.fieldLabels };
     }
     if (!s.customFields || !Array.isArray(s.customFields)) s.customFields = [];
+    if (!s.prazos || !Array.isArray(s.prazos)) s.prazos = [];
+    if (!s.prazoTypes || !Array.isArray(s.prazoTypes) || s.prazoTypes.length === 0) {
+      s.prazoTypes = JSON.parse(JSON.stringify(DEFAULT_PRAZO_TYPES));
+    }
     return s;
   }
   function loadState() {
@@ -487,7 +620,7 @@
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
   function slugify(s) {
     return s.toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
       .replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || ("x_" + uid());
   }
   function escapeHtml(s) {
@@ -509,6 +642,25 @@
   function getStatusDef(value) {
     return state.statuses.find(s => s.value === value) || { value, label: value || "—", bg: "#eee", color: "#333" };
   }
+  function getPrazoTypeDef(id) {
+    return state.prazoTypes.find(t => t.id === id) || { id, label: id || "—", bg: "#eee", color: "#333" };
+  }
+  function pad2(n) { return String(n).padStart(2, "0"); }
+  function todayStr() {
+    const t = new Date();
+    return `${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`;
+  }
+  function addBusinessDays(startStr, days) {
+    if (!startStr || !days) return "";
+    let d = new Date(startStr + "T00:00:00");
+    let count = 0;
+    while (count < days) {
+      d.setDate(d.getDate() + 1);
+      const dow = d.getDay();
+      if (dow !== 0 && dow !== 6) count++;
+    }
+    return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+  }
 
   // ========== TABS ==========
   function renderTabs() {
@@ -522,15 +674,26 @@
     state.categorias.forEach((c, idx) => {
       const count = state.items.filter(i => i.categoria === c.id && i.status === "pendente").length;
       const btn = document.createElement("button");
-      btn.className = "tab" + (c.id === activeTab ? " active" : "");
+      btn.className = "tab" + (activeView === "categoria" && c.id === activeTab ? " active" : "");
       btn.innerHTML = `<span>${escapeHtml(c.icon || "•")}</span> ${escapeHtml(c.label)} <span class="count">${count}</span>`;
       btn.onclick = () => {
         if (btn.classList.contains("dragging")) return;
-        activeTab = c.id; renderAll();
+        activeTab = c.id; switchView("categoria"); renderAll();
       };
       attachTabDnD(btn, c, idx);
       el.appendChild(btn);
     });
+    document.getElementById("calTabBtn").classList.toggle("active", activeView === "calendario");
+  }
+
+  // ========== VIEW SWITCH (categoria vs calendário) ==========
+  function switchView(view) {
+    activeView = view;
+    document.getElementById("categoriaView").style.display = view === "categoria" ? "" : "none";
+    document.getElementById("calendarioView").classList.toggle("active", view === "calendario");
+    document.getElementById("calTabBtn").classList.toggle("active", view === "calendario");
+    document.querySelectorAll("#tabs .tab").forEach(t => { if (view === "calendario") t.classList.remove("active"); });
+    if (view === "calendario") renderCalendar();
   }
 
   function fmtDateTime(d, h) {
@@ -660,7 +823,93 @@
     const pendentes = state.items.filter(i => i.status === "pendente").length;
     document.getElementById("subline").textContent = `${total} itens no total · ${pendentes} pendentes`;
   }
-  function renderAll() { renderTabs(); renderList(); updateSubline(); }
+  function renderAlertBanner() {
+    const el = document.getElementById("alertBanner");
+    if (!el) return;
+    const t = todayStr();
+    let overdue = 0, hoje = 0;
+    (state.prazos || []).forEach(p => {
+      if (!p.data) return;
+      if (p.data < t) overdue++;
+      else if (p.data === t) hoje++;
+    });
+    if (overdue === 0 && hoje === 0) {
+      el.className = "alert-banner";
+      el.textContent = "";
+      el.onclick = null;
+      return;
+    }
+    const parts = [];
+    if (overdue > 0) parts.push(`🔴 ${overdue} prazo${overdue > 1 ? "s" : ""} atrasado${overdue > 1 ? "s" : ""}`);
+    if (hoje > 0) parts.push(`🟡 ${hoje} prazo${hoje > 1 ? "s" : ""} vence${hoje > 1 ? "m" : ""} hoje`);
+    el.textContent = parts.join(" · ") + " — ver no Calendário";
+    el.className = "alert-banner show " + (overdue > 0 ? "overdue" : "today");
+    el.style.cursor = "pointer";
+    el.onclick = () => switchView("calendario");
+  }
+  function renderAll() { renderTabs(); renderList(); updateSubline(); renderAlertBanner(); }
+
+  // ========== CALENDÁRIO ==========
+  function renderCalendar() {
+    const label = document.getElementById("calMonthLabel");
+    label.textContent = `${MONTH_NAMES[calMonth]} de ${calYear}`;
+    const grid = document.getElementById("calGrid");
+    grid.innerHTML = "";
+    DOW_NAMES.forEach(d => {
+      const el = document.createElement("div");
+      el.className = "cal-dow";
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+    const firstOfMonth = new Date(calYear, calMonth, 1);
+    const startDow = firstOfMonth.getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const daysInPrevMonth = new Date(calYear, calMonth, 0).getDate();
+    const tStr = todayStr();
+
+    const cells = [];
+    for (let i = startDow - 1; i >= 0; i--) {
+      cells.push({ day: daysInPrevMonth - i, other: true, dateStr: null });
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      cells.push({ day: d, other: false, dateStr: `${calYear}-${pad2(calMonth+1)}-${pad2(d)}` });
+    }
+    let nextDay = 1;
+    while (cells.length % 7 !== 0) {
+      cells.push({ day: nextDay++, other: true, dateStr: null });
+    }
+
+    cells.forEach(cell => {
+      const div = document.createElement("div");
+      div.className = "cal-day" + (cell.other ? " other-month" : "") + (cell.dateStr === tStr ? " today-cell" : "");
+      const num = document.createElement("div");
+      num.className = "cal-daynum";
+      num.textContent = cell.day;
+      div.appendChild(num);
+      if (cell.dateStr) {
+        const items = (state.prazos || []).filter(p => p.data === cell.dateStr).sort((a,b) => (a.hora||"").localeCompare(b.hora||""));
+        const maxShow = 3;
+        items.slice(0, maxShow).forEach(p => {
+          const tdef = getPrazoTypeDef(p.tipo);
+          const chip = document.createElement("div");
+          chip.className = "cal-chip";
+          chip.style.background = tdef.bg; chip.style.color = tdef.color;
+          chip.textContent = (p.hora ? p.hora + " " : "") + p.titulo;
+          chip.title = p.titulo;
+          chip.onclick = (e) => { e.stopPropagation(); openPrazoModal(p.id); };
+          div.appendChild(chip);
+        });
+        if (items.length > maxShow) {
+          const more = document.createElement("div");
+          more.className = "cal-more";
+          more.textContent = `+${items.length - maxShow} mais`;
+          div.appendChild(more);
+        }
+        div.onclick = () => openPrazoModal(null, cell.dateStr);
+      }
+      grid.appendChild(div);
+    });
+  }
 
   // ========== DRAG & DROP CARDS ==========
   function attachCardDnD(card, item) {
@@ -857,6 +1106,73 @@
     renderAll();
   }
 
+  // ========== MODAL DE PRAZO (Calendário) ==========
+  function fillPrazoTypeSelect(currentValue) {
+    const sel = document.getElementById("pTipo");
+    sel.innerHTML = "";
+    state.prazoTypes.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.id; opt.textContent = t.label;
+      sel.appendChild(opt);
+    });
+    if (currentValue && state.prazoTypes.some(t => t.id === currentValue)) sel.value = currentValue;
+    else if (state.prazoTypes.length) sel.value = state.prazoTypes[0].id;
+  }
+  function openPrazoModal(id, presetDate) {
+    editingPrazoId = id || null;
+    document.getElementById("pUseBusday").checked = false;
+    document.getElementById("busdayBox").classList.remove("show");
+    let p = null;
+    if (id) {
+      p = state.prazos.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById("prazoModalTitle").textContent = "Editar prazo";
+      document.getElementById("pTitulo").value = p.titulo || "";
+      fillPrazoTypeSelect(p.tipo);
+      document.getElementById("pData").value = p.data || "";
+      document.getElementById("pHora").value = p.hora || "";
+      document.getElementById("pObs").value = p.obs || "";
+      document.getElementById("pDeleteBtn").style.display = "inline-block";
+    } else {
+      document.getElementById("prazoModalTitle").textContent = "Novo prazo";
+      document.getElementById("pTitulo").value = "";
+      fillPrazoTypeSelect(null);
+      document.getElementById("pData").value = presetDate || "";
+      document.getElementById("pHora").value = "";
+      document.getElementById("pObs").value = "";
+      document.getElementById("pDeleteBtn").style.display = "none";
+    }
+    document.getElementById("pBusdayStart").value = presetDate || todayStr();
+    document.getElementById("pBusdayCount").value = 15;
+    document.getElementById("prazoModalBg").classList.add("open");
+    setTimeout(() => document.getElementById("pTitulo").focus(), 50);
+  }
+  function closePrazoModal() {
+    document.getElementById("prazoModalBg").classList.remove("open");
+    editingPrazoId = null;
+  }
+  function savePrazoModal() {
+    const data = {
+      titulo: document.getElementById("pTitulo").value.trim(),
+      tipo: document.getElementById("pTipo").value,
+      data: document.getElementById("pData").value,
+      hora: document.getElementById("pHora").value,
+      obs: document.getElementById("pObs").value.trim()
+    };
+    if (!data.titulo) { alert("Informe um título para o prazo."); return; }
+    if (!data.data) { alert("Informe a data (ou calcule pelos dias úteis)."); return; }
+    if (editingPrazoId) {
+      const p = state.prazos.find(x => x.id === editingPrazoId);
+      Object.assign(p, data);
+    } else {
+      state.prazos.push({ id: uid(), criado: Date.now(), ...data });
+    }
+    saveState();
+    closePrazoModal();
+    renderAlertBanner();
+    if (activeView === "calendario") renderCalendar();
+  }
+
   // ========== SETTINGS MODAL ==========
   function openSettings(section) {
     switchSettingsSection(section || "categorias");
@@ -872,6 +1188,7 @@
     renderSettingsCategorias();
     renderSettingsStatuses();
     renderSettingsFields();
+    renderSettingsPrazoTypes();
     renderSyncSettingsSection();
   }
 
@@ -1006,6 +1323,76 @@
     document.getElementById("newStatusLabel").focus();
   }
 
+  // ---- Tipos de Prazo ----
+  function renderSettingsPrazoTypes() {
+    const el = document.getElementById("prazoTypeList");
+    el.innerHTML = "";
+    state.prazoTypes.forEach((t, idx) => {
+      const row = document.createElement("div");
+      row.className = "row-item";
+      row.innerHTML = `
+        <button class="swatch" style="background:${t.bg};" title="Mudar cor" data-action="color" data-i="${idx}"></button>
+        <input class="label-input" type="text" value="${escapeHtml(t.label)}" data-i="${idx}">
+        <button class="icon-btn" title="Subir" data-action="up" data-i="${idx}">↑</button>
+        <button class="icon-btn" title="Descer" data-action="down" data-i="${idx}">↓</button>
+        <button class="icon-btn" title="Remover" data-action="remove" data-i="${idx}">🗑</button>
+      `;
+      el.appendChild(row);
+    });
+    el.querySelectorAll("input").forEach(inp => {
+      inp.oninput = () => {
+        const i = +inp.getAttribute("data-i");
+        state.prazoTypes[i].label = inp.value;
+        saveState();
+        if (activeView === "calendario") renderCalendar();
+      };
+    });
+    el.querySelectorAll("[data-action]").forEach(b => {
+      b.onclick = () => {
+        const i = +b.getAttribute("data-i");
+        const action = b.getAttribute("data-action");
+        if (action === "color") {
+          openColorPicker((c) => {
+            state.prazoTypes[i].bg = c.bg;
+            state.prazoTypes[i].color = c.color;
+            saveState();
+            renderSettingsPrazoTypes();
+            if (activeView === "calendario") renderCalendar();
+          });
+        } else if (action === "up" && i > 0) {
+          [state.prazoTypes[i-1], state.prazoTypes[i]] = [state.prazoTypes[i], state.prazoTypes[i-1]];
+          saveState(); renderSettingsPrazoTypes();
+        } else if (action === "down" && i < state.prazoTypes.length - 1) {
+          [state.prazoTypes[i+1], state.prazoTypes[i]] = [state.prazoTypes[i], state.prazoTypes[i+1]];
+          saveState(); renderSettingsPrazoTypes();
+        } else if (action === "remove") {
+          const t = state.prazoTypes[i];
+          const usedBy = state.prazos.filter(p => p.tipo === t.id).length;
+          let msg = `Remover o tipo "${t.label}"?`;
+          if (usedBy > 0) msg += `\n\nAtenção: ${usedBy} prazo(s) estão com este tipo. Eles vão continuar existindo mas sem cor. Continuar?`;
+          if (!confirm(msg)) return;
+          state.prazoTypes.splice(i, 1);
+          saveState();
+          renderSettingsPrazoTypes();
+          if (activeView === "calendario") renderCalendar();
+        }
+      };
+    });
+  }
+  function addNewPrazoType() {
+    const label = document.getElementById("newPrazoTypeLabel").value.trim();
+    if (!label) { alert("Informe um nome para o tipo."); return; }
+    let id = slugify(label);
+    while (state.prazoTypes.find(t => t.id === id)) id = id + "_" + uid().slice(0,3);
+    const used = state.prazoTypes.map(t => t.bg);
+    const free = COLOR_PALETTE.find(c => !used.includes(c.bg)) || COLOR_PALETTE[0];
+    state.prazoTypes.push({ id, label, bg: free.bg, color: free.color });
+    saveState();
+    renderSettingsPrazoTypes();
+    document.getElementById("newPrazoTypeLabel").value = "";
+    document.getElementById("newPrazoTypeLabel").focus();
+  }
+
   // ---- Color Picker ----
   function openColorPicker(callback) {
     colorPickerCallback = callback;
@@ -1138,6 +1525,37 @@
 
   document.getElementById("colorPickerCancelBtn").onclick = closeColorPicker;
   document.getElementById("colorPickerBg").onclick = (e) => { if (e.target.id === "colorPickerBg") closeColorPicker(); };
+
+  document.getElementById("calTabBtn").onclick = () => switchView("calendario");
+  document.getElementById("calPrevBtn").onclick = () => { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar(); };
+  document.getElementById("calNextBtn").onclick = () => { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar(); };
+  document.getElementById("calTodayBtn").onclick = () => { const t = new Date(); calYear = t.getFullYear(); calMonth = t.getMonth(); renderCalendar(); };
+  document.getElementById("calNewBtn").onclick = () => openPrazoModal(null);
+
+  document.getElementById("pCancelBtn").onclick = closePrazoModal;
+  document.getElementById("pSaveBtn").onclick = savePrazoModal;
+  document.getElementById("prazoModalBg").onclick = (e) => { if (e.target.id === "prazoModalBg") closePrazoModal(); };
+  document.getElementById("pDeleteBtn").onclick = () => {
+    if (!editingPrazoId) return;
+    if (confirm("Excluir este prazo?")) {
+      state.prazos = state.prazos.filter(p => p.id !== editingPrazoId);
+      saveState();
+      closePrazoModal();
+      renderAlertBanner();
+      if (activeView === "calendario") renderCalendar();
+    }
+  };
+  document.getElementById("pUseBusday").onchange = (e) => {
+    document.getElementById("busdayBox").classList.toggle("show", e.target.checked);
+  };
+  document.getElementById("pCalcBtn").onclick = () => {
+    const start = document.getElementById("pBusdayStart").value;
+    const count = parseInt(document.getElementById("pBusdayCount").value, 10);
+    if (!start || !count) { alert("Preencha a data inicial e o número de dias úteis."); return; }
+    document.getElementById("pData").value = addBusinessDays(start, count);
+  };
+  document.getElementById("addPrazoTypeBtn").onclick = addNewPrazoType;
+  document.getElementById("newPrazoTypeLabel").addEventListener("keydown", (e) => { if (e.key === "Enter") addNewPrazoType(); });
 
   document.getElementById("ghConnectBtn").onclick = async () => {
     const v = document.getElementById("ghTokenInput").value.trim();
