@@ -108,6 +108,23 @@
   .emoji-popup button { border: none; background: transparent; cursor: pointer; font-size: 18px; padding: 3px; border-radius: 6px; line-height: 1.3; }
   .emoji-popup button:hover { background: #f3f2ee; }
 
+  .tese-card { background: #fff; border: 1px solid #e6e3dc; border-radius: 10px; padding: 12px 14px; }
+  .tese-card .tese-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .tese-card .tese-titulo { font-weight: 600; font-size: 14px; }
+  .tese-card .tese-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .tese-card .tese-texto { color: #4b4b4b; font-size: 13px; white-space: pre-wrap; word-break: break-word; margin-top: 6px; }
+  .tese-card .tese-texto.clamped { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .tese-card .tese-toggle { background: none; border: none; color: #d97706; font-size: 12px; cursor: pointer; padding: 6px 0 0; font-family: inherit; }
+
+  .dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .dash-card { background: #fff; border: 1px solid #e6e3dc; border-radius: 10px; padding: 14px; cursor: pointer; transition: box-shadow 0.15s; }
+  .dash-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+  .dash-card h3 { margin: 0 0 8px; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+  .dash-card .dash-total { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .dash-card .dash-statuses { display: flex; flex-direction: column; gap: 4px; }
+  .dash-card .dash-status-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 8px; border-radius: 5px; }
+  .dash-empty { color: #999; font-size: 12px; }
+
   .alert-banner { display: none; align-items: center; gap: 8px; margin-bottom: 14px; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; }
   .alert-banner.show { display: flex; }
   .alert-banner.overdue { background: #fde8e8; color: #b91c1c; }
@@ -159,7 +176,9 @@
 </header>
 
 <div class="tabs-bar">
+  <button class="tab cal-tab" id="dashTabBtn">📊 Visão Geral</button>
   <button class="tab cal-tab" id="calTabBtn">📅 Calendário</button>
+  <button class="tab cal-tab" id="teseTabBtn">📚 Teses</button>
   <nav class="tabs" id="tabs"></nav>
 </div>
 
@@ -195,6 +214,20 @@
       <button class="btn primary" id="calNewBtn">+ Novo prazo</button>
     </div>
     <div class="cal-grid" id="calGrid"></div>
+  </div>
+
+  <div id="tesesView" class="cal-wrap">
+    <div class="toolbar">
+      <button class="btn primary" id="teseNewBtn">+ Nova tese</button>
+      <div class="filter-row">
+        <input id="teseSearch" type="text" placeholder="Buscar por título ou texto...">
+      </div>
+    </div>
+    <div id="teseList" class="list"></div>
+  </div>
+
+  <div id="dashboardView" class="cal-wrap">
+    <div id="dashGrid" class="dash-grid"></div>
   </div>
 </main>
 
@@ -288,6 +321,28 @@
       <div class="right">
         <button class="btn" id="pCancelBtn">Cancelar</button>
         <button class="btn primary" id="pSaveBtn">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de tese (Biblioteca de teses) -->
+<div class="modal-bg" id="teseModalBg">
+  <div class="modal">
+    <h2 id="teseModalTitle">Nova tese</h2>
+    <div class="field">
+      <label for="tTitulo">Título</label>
+      <input id="tTitulo" type="text" placeholder="Ex: Inversão do ônus da prova em relação de consumo">
+    </div>
+    <div class="field">
+      <label for="tTexto">Texto / Fundamentação</label>
+      <textarea id="tTexto" placeholder="Cole ou escreva o argumento, fundamentação legal, jurisprudência, etc." style="min-height:220px;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger" id="tDeleteBtn" style="display:none;">Excluir</button>
+      <div class="right">
+        <button class="btn" id="tCancelBtn">Cancelar</button>
+        <button class="btn primary" id="tSaveBtn">Salvar</button>
       </div>
     </div>
   </div>
@@ -515,11 +570,12 @@
   let dragSrcItemId = null;
   let dragSrcCatId = null;
   let colorPickerCallback = null;
-  let activeView = "categoria"; // categoria | calendario
+  let activeView = "categoria"; // categoria | calendario | teses | dashboard
   const __today0 = new Date();
   let calYear = __today0.getFullYear();
   let calMonth = __today0.getMonth();
   let editingPrazoId = null;
+  let editingTeseId = null;
 
   function normalizeState(s) {
     s = s && typeof s === "object" ? s : {};
@@ -540,6 +596,7 @@
     if (!s.prazoTypes || !Array.isArray(s.prazoTypes) || s.prazoTypes.length === 0) {
       s.prazoTypes = JSON.parse(JSON.stringify(DEFAULT_PRAZO_TYPES));
     }
+    if (!s.teses || !Array.isArray(s.teses)) s.teses = [];
     return s;
   }
   function loadState() {
@@ -739,16 +796,24 @@
       el.appendChild(btn);
     });
     document.getElementById("calTabBtn").classList.toggle("active", activeView === "calendario");
+    document.getElementById("teseTabBtn").classList.toggle("active", activeView === "teses");
+    document.getElementById("dashTabBtn").classList.toggle("active", activeView === "dashboard");
   }
 
-  // ========== VIEW SWITCH (categoria vs calendário) ==========
+  // ========== VIEW SWITCH (categoria vs calendário vs teses vs dashboard) ==========
   function switchView(view) {
     activeView = view;
     document.getElementById("categoriaView").style.display = view === "categoria" ? "" : "none";
     document.getElementById("calendarioView").classList.toggle("active", view === "calendario");
+    document.getElementById("tesesView").classList.toggle("active", view === "teses");
+    document.getElementById("dashboardView").classList.toggle("active", view === "dashboard");
     document.getElementById("calTabBtn").classList.toggle("active", view === "calendario");
-    document.querySelectorAll("#tabs .tab").forEach(t => { if (view === "calendario") t.classList.remove("active"); });
+    document.getElementById("teseTabBtn").classList.toggle("active", view === "teses");
+    document.getElementById("dashTabBtn").classList.toggle("active", view === "dashboard");
+    document.querySelectorAll("#tabs .tab").forEach(t => { if (view !== "categoria") t.classList.remove("active"); });
     if (view === "calendario") renderCalendar();
+    if (view === "teses") renderTeses();
+    if (view === "dashboard") renderDashboard();
   }
 
   function fmtDateTime(d, h) {
@@ -902,7 +967,11 @@
     el.style.cursor = "pointer";
     el.onclick = () => switchView("calendario");
   }
-  function renderAll() { renderTabs(); renderList(); updateSubline(); renderAlertBanner(); }
+  function renderAll() {
+    renderTabs(); renderList(); updateSubline(); renderAlertBanner();
+    if (activeView === "teses") renderTeses();
+    if (activeView === "dashboard") renderDashboard();
+  }
 
   // ========== CALENDÁRIO ==========
   function renderCalendar() {
@@ -1226,6 +1295,125 @@
     closePrazoModal();
     renderAlertBanner();
     if (activeView === "calendario") renderCalendar();
+  }
+
+  // ========== BIBLIOTECA DE TESES ==========
+  function renderTeses() {
+    const list = document.getElementById("teseList");
+    if (!list) return;
+    const q = (document.getElementById("teseSearch").value || "").trim().toLowerCase();
+    let teses = state.teses.slice().sort((a,b) => (b.criado || 0) - (a.criado || 0));
+    if (q) {
+      teses = teses.filter(t =>
+        (t.titulo || "").toLowerCase().includes(q) || (t.texto || "").toLowerCase().includes(q)
+      );
+    }
+    list.innerHTML = "";
+    if (teses.length === 0) {
+      list.innerHTML = state.teses.length === 0
+        ? `<div class="empty"><p style="font-size:32px;">📚</p><p><strong>Nenhuma tese cadastrada</strong></p><p>Clique em <em>+ Nova tese</em> para guardar seus argumentos e fundamentações.</p></div>`
+        : `<div class="empty"><p><strong>Nenhuma tese encontrada</strong></p><p>Tente outro termo de busca.</p></div>`;
+      return;
+    }
+    teses.forEach(t => {
+      const card = document.createElement("div");
+      card.className = "tese-card";
+      card.innerHTML = `
+        <div class="tese-head">
+          <div class="tese-titulo">${escapeHtml(t.titulo || "(sem título)")}</div>
+          <div class="tese-actions">
+            <button class="icon-btn" title="Editar" data-action="edit" data-id="${t.id}">✎</button>
+            <button class="icon-btn" title="Excluir" data-action="delete" data-id="${t.id}">🗑</button>
+          </div>
+        </div>
+        <div class="tese-texto clamped">${escapeHtml(t.texto || "")}</div>
+        <button type="button" class="tese-toggle" data-action="toggle-clamp">Ver mais</button>
+      `;
+      list.appendChild(card);
+      const textoEl = card.querySelector(".tese-texto");
+      const toggleBtn = card.querySelector(".tese-toggle");
+      toggleBtn.onclick = () => {
+        const clamped = textoEl.classList.toggle("clamped");
+        toggleBtn.textContent = clamped ? "Ver mais" : "Ver menos";
+      };
+      card.querySelector('[data-action="edit"]').onclick = () => openTeseModal(t.id);
+      card.querySelector('[data-action="delete"]').onclick = () => {
+        if (!confirm(`Excluir a tese "${t.titulo || "(sem título)"}"?`)) return;
+        state.teses = state.teses.filter(x => x.id !== t.id);
+        saveState();
+        renderTeses();
+      };
+    });
+  }
+  function openTeseModal(id) {
+    editingTeseId = id || null;
+    if (id) {
+      const t = state.teses.find(x => x.id === id);
+      if (!t) return;
+      document.getElementById("teseModalTitle").textContent = "Editar tese";
+      document.getElementById("tTitulo").value = t.titulo || "";
+      document.getElementById("tTexto").value = t.texto || "";
+      document.getElementById("tDeleteBtn").style.display = "inline-block";
+    } else {
+      document.getElementById("teseModalTitle").textContent = "Nova tese";
+      document.getElementById("tTitulo").value = "";
+      document.getElementById("tTexto").value = "";
+      document.getElementById("tDeleteBtn").style.display = "none";
+    }
+    document.getElementById("teseModalBg").classList.add("open");
+    setTimeout(() => document.getElementById("tTitulo").focus(), 50);
+  }
+  function closeTeseModal() {
+    document.getElementById("teseModalBg").classList.remove("open");
+    editingTeseId = null;
+  }
+  function saveTeseModal() {
+    const data = {
+      titulo: document.getElementById("tTitulo").value.trim(),
+      texto: document.getElementById("tTexto").value.trim()
+    };
+    if (!data.titulo) { alert("Informe um título para a tese."); return; }
+    if (editingTeseId) {
+      const t = state.teses.find(x => x.id === editingTeseId);
+      Object.assign(t, data);
+    } else {
+      state.teses.push({ id: uid(), criado: Date.now(), ...data });
+    }
+    saveState();
+    closeTeseModal();
+    if (activeView === "teses") renderTeses();
+  }
+
+  // ========== DASHBOARD (Visão Geral) ==========
+  function renderDashboard() {
+    const el = document.getElementById("dashGrid");
+    if (!el) return;
+    el.innerHTML = "";
+    if (state.categorias.length === 0) {
+      el.innerHTML = `<div class="empty"><p><strong>Nenhuma categoria cadastrada</strong></p></div>`;
+      return;
+    }
+    state.categorias.forEach(c => {
+      const items = state.items.filter(i => i.categoria === c.id);
+      const byStatus = {};
+      items.forEach(i => {
+        const key = i.status || "";
+        byStatus[key] = (byStatus[key] || 0) + 1;
+      });
+      const rows = Object.keys(byStatus).map(key => {
+        const def = getStatusDef(key);
+        return `<div class="dash-status-row" style="background:${def.bg}; color:${def.color};"><span>${escapeHtml(def.label)}</span><span>${byStatus[key]}</span></div>`;
+      }).join("");
+      const card = document.createElement("div");
+      card.className = "dash-card";
+      card.innerHTML = `
+        <h3><span>${escapeHtml(c.icon || "•")}</span> ${escapeHtml(c.label)}</h3>
+        <div class="dash-total">${items.length} ${items.length === 1 ? "item" : "itens"}</div>
+        <div class="dash-statuses">${rows || '<span class="dash-empty">Nenhum item</span>'}</div>
+      `;
+      card.onclick = () => { activeTab = c.id; switchView("categoria"); renderAll(); };
+      el.appendChild(card);
+    });
   }
 
   // ========== SETTINGS MODAL ==========
@@ -1627,6 +1815,24 @@
   document.getElementById("addPrazoTypeBtn").onclick = addNewPrazoType;
   document.getElementById("newPrazoTypeLabel").addEventListener("keydown", (e) => { if (e.key === "Enter") addNewPrazoType(); });
 
+  document.getElementById("dashTabBtn").onclick = () => switchView("dashboard");
+
+  document.getElementById("teseTabBtn").onclick = () => switchView("teses");
+  document.getElementById("teseNewBtn").onclick = () => openTeseModal(null);
+  document.getElementById("teseSearch").addEventListener("input", () => renderTeses());
+  document.getElementById("tCancelBtn").onclick = closeTeseModal;
+  document.getElementById("tSaveBtn").onclick = saveTeseModal;
+  document.getElementById("teseModalBg").onclick = (e) => { if (e.target.id === "teseModalBg") closeTeseModal(); };
+  document.getElementById("tDeleteBtn").onclick = () => {
+    if (!editingTeseId) return;
+    if (confirm("Excluir esta tese?")) {
+      state.teses = state.teses.filter(t => t.id !== editingTeseId);
+      saveState();
+      closeTeseModal();
+      if (activeView === "teses") renderTeses();
+    }
+  };
+
   document.getElementById("ghConnectBtn").onclick = async () => {
     const v = document.getElementById("ghTokenInput").value.trim();
     if (!v) { alert("Cole o token de acesso do GitHub."); return; }
@@ -1666,7 +1872,7 @@
   document.getElementById("sortBy").onchange = renderList;
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { closeModal(); closeSettings(); closeColorPicker(); }
+    if (e.key === "Escape") { closeModal(); closeSettings(); closeColorPicker(); closePrazoModal(); closeTeseModal(); }
   });
 
   renderAll();
