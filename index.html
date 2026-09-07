@@ -151,6 +151,8 @@
   .busday-box.show { display: block; }
 
   @media (max-width: 600px) {
+    header { flex-wrap: wrap; }
+    .header-actions { flex-wrap: wrap; }
     .cal-grid { gap: 3px; }
     .cal-day { min-height: 56px; padding: 4px; }
     .cal-chip { font-size: 9px; }
@@ -170,6 +172,7 @@
     <div class="sub" id="syncLine" style="cursor:pointer;"></div>
   </div>
   <div class="header-actions">
+    <button class="btn" id="hardRefreshBtn" title="Força buscar a versão mais nova, ignorando cache salvo no navegador">🔄 Atualizar</button>
     <button class="btn" id="settingsBtn" title="Configurar categorias, status e campos">⚙ Configurações</button>
     <button class="btn primary" id="newBtn">+ Novo</button>
   </div>
@@ -1763,6 +1766,10 @@
   };
   document.getElementById("modalBg").onclick = (e) => { if (e.target.id === "modalBg") closeModal(); };
 
+  document.getElementById("hardRefreshBtn").onclick = () => {
+    const base = window.location.href.split("?")[0].split("#")[0];
+    window.location.href = base + "?v=" + Date.now();
+  };
   document.getElementById("settingsBtn").onclick = () => openSettings();
   document.getElementById("settingsCloseBtn").onclick = closeSettings;
   document.getElementById("settingsModalBg").onclick = (e) => { if (e.target.id === "settingsModalBg") closeSettings(); };
