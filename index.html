@@ -351,6 +351,10 @@
       <label for="postTitulo">Título / Tema do post</label>
       <input id="postTitulo" type="text" placeholder="Ex: Reels sobre negativação indevida">
     </div>
+    <div class="field">
+      <label for="postTipo">Tipo</label>
+      <select id="postTipo"></select>
+    </div>
     <div class="row-2">
       <div class="field">
         <label for="postData">Data</label>
@@ -406,6 +410,7 @@
       <button data-section="statuses">Status</button>
       <button data-section="fields">Campos</button>
       <button data-section="prazotypes">Tipos de Prazo</button>
+      <button data-section="posttypes">Tipos de Post</button>
       <button data-section="sync">Sincronização</button>
     </div>
 
@@ -460,6 +465,15 @@
       <div class="add-row">
         <input id="newPrazoTypeLabel" class="label-input" type="text" placeholder="Nome do novo tipo (ex: Perícia)">
         <button class="btn primary small" id="addPrazoTypeBtn">+ Adicionar</button>
+      </div>
+    </div>
+
+    <div id="settingsSection_posttypes" class="settings-section">
+      <p class="help-text">Tipos de post usados no Calendário de Posts (ex: Vídeo mudo, Vídeo falado, Carrossel). Clique no quadradinho colorido pra escolher a cor.</p>
+      <div id="postTypeList"></div>
+      <div class="add-row">
+        <input id="newPostTypeLabel" class="label-input" type="text" placeholder="Nome do novo tipo (ex: Story, Reels)">
+        <button class="btn primary small" id="addPostTypeBtn">+ Adicionar</button>
       </div>
     </div>
 
@@ -544,6 +558,12 @@
     { id: "prazo_processual", label: "Prazo processual",      bg: "#dbeafe", color: "#1e40af" },
     { id: "reuniao_cliente",  label: "Reunião com cliente",   bg: "#dcfce7", color: "#166534" },
     { id: "cobranca",         label: "Cobrança / honorários", bg: "#fef3c7", color: "#92400e" }
+  ];
+
+  const DEFAULT_POST_TYPES = [
+    { id: "video_mudo",   label: "Vídeo mudo",   bg: "#dbeafe", color: "#1e40af" },
+    { id: "video_falado", label: "Vídeo falado", bg: "#dcfce7", color: "#166534" },
+    { id: "carrossel",    label: "Carrossel",    bg: "#fde8e8", color: "#b91c1c" }
   ];
 
   const MONTH_NAMES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
@@ -650,6 +670,9 @@
     }
     if (!s.teses || !Array.isArray(s.teses)) s.teses = [];
     if (!s.posts || !Array.isArray(s.posts)) s.posts = [];
+    if (!s.postTypes || !Array.isArray(s.postTypes) || s.postTypes.length === 0) {
+      s.postTypes = JSON.parse(JSON.stringify(DEFAULT_POST_TYPES));
+    }
     return s;
   }
   function loadState() {
@@ -809,6 +832,9 @@
   }
   function getPrazoTypeDef(id) {
     return state.prazoTypes.find(t => t.id === id) || { id, label: id || "—", bg: "#eee", color: "#333" };
+  }
+  function getPostTypeDef(id) {
+    return state.postTypes.find(t => t.id === id) || { id, label: id || "—", bg: "#eee", color: "#333" };
   }
   function pad2(n) { return String(n).padStart(2, "0"); }
   function todayStr() {
@@ -1134,9 +1160,10 @@
         const posts = (state.posts || []).filter(p => p.data === cell.dateStr).sort((a,b) => (a.hora||"").localeCompare(b.hora||""));
         const maxShow = 3;
         posts.slice(0, maxShow).forEach(p => {
+          const tdef = getPostTypeDef(p.tipo);
           const chip = document.createElement("div");
           chip.className = "cal-chip";
-          chip.style.background = "#ede9fe"; chip.style.color = "#5b21b6";
+          chip.style.background = tdef.bg; chip.style.color = tdef.color;
           chip.textContent = (p.hora ? p.hora + " " : "") + p.titulo;
           chip.title = p.titulo;
           chip.onclick = (e) => { e.stopPropagation(); openPostModal(p.id); };
@@ -1153,6 +1180,17 @@
       grid.appendChild(div);
     });
   }
+  function fillPostTypeSelect(currentValue) {
+    const sel = document.getElementById("postTipo");
+    sel.innerHTML = "";
+    state.postTypes.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.id; opt.textContent = t.label;
+      sel.appendChild(opt);
+    });
+    if (currentValue && state.postTypes.some(t => t.id === currentValue)) sel.value = currentValue;
+    else if (state.postTypes.length) sel.value = state.postTypes[0].id;
+  }
   function openPostModal(id, presetDate) {
     editingPostId = id || null;
     if (id) {
@@ -1160,6 +1198,7 @@
       if (!p) return;
       document.getElementById("postModalTitle").textContent = "Editar post";
       document.getElementById("postTitulo").value = p.titulo || "";
+      fillPostTypeSelect(p.tipo);
       document.getElementById("postData").value = p.data || "";
       document.getElementById("postHora").value = p.hora || "";
       document.getElementById("postTexto").value = p.texto || "";
@@ -1167,6 +1206,7 @@
     } else {
       document.getElementById("postModalTitle").textContent = "Novo post";
       document.getElementById("postTitulo").value = "";
+      fillPostTypeSelect(null);
       document.getElementById("postData").value = presetDate || "";
       document.getElementById("postHora").value = "";
       document.getElementById("postTexto").value = "";
@@ -1182,6 +1222,7 @@
   function savePostModal() {
     const data = {
       titulo: document.getElementById("postTitulo").value.trim(),
+      tipo: document.getElementById("postTipo").value,
       data: document.getElementById("postData").value,
       hora: document.getElementById("postHora").value,
       texto: document.getElementById("postTexto").value.trim()
@@ -1596,6 +1637,7 @@
     renderSettingsStatuses();
     renderSettingsFields();
     renderSettingsPrazoTypes();
+    renderSettingsPostTypes();
     renderSyncSettingsSection();
   }
 
@@ -1810,6 +1852,76 @@
     document.getElementById("newPrazoTypeLabel").focus();
   }
 
+  // ---- Tipos de Post ----
+  function renderSettingsPostTypes() {
+    const el = document.getElementById("postTypeList");
+    el.innerHTML = "";
+    state.postTypes.forEach((t, idx) => {
+      const row = document.createElement("div");
+      row.className = "row-item";
+      row.innerHTML = `
+        <button class="swatch" style="background:${t.bg};" title="Mudar cor" data-action="color" data-i="${idx}"></button>
+        <input class="label-input" type="text" value="${escapeHtml(t.label)}" data-i="${idx}">
+        <button class="icon-btn" title="Subir" data-action="up" data-i="${idx}">↑</button>
+        <button class="icon-btn" title="Descer" data-action="down" data-i="${idx}">↓</button>
+        <button class="icon-btn" title="Remover" data-action="remove" data-i="${idx}">🗑</button>
+      `;
+      el.appendChild(row);
+    });
+    el.querySelectorAll("input").forEach(inp => {
+      inp.oninput = () => {
+        const i = +inp.getAttribute("data-i");
+        state.postTypes[i].label = inp.value;
+        saveState();
+        if (activeView === "postsCalendario") renderPostsCalendar();
+      };
+    });
+    el.querySelectorAll("[data-action]").forEach(b => {
+      b.onclick = () => {
+        const i = +b.getAttribute("data-i");
+        const action = b.getAttribute("data-action");
+        if (action === "color") {
+          openColorPicker((c) => {
+            state.postTypes[i].bg = c.bg;
+            state.postTypes[i].color = c.color;
+            saveState();
+            renderSettingsPostTypes();
+            if (activeView === "postsCalendario") renderPostsCalendar();
+          });
+        } else if (action === "up" && i > 0) {
+          [state.postTypes[i-1], state.postTypes[i]] = [state.postTypes[i], state.postTypes[i-1]];
+          saveState(); renderSettingsPostTypes();
+        } else if (action === "down" && i < state.postTypes.length - 1) {
+          [state.postTypes[i+1], state.postTypes[i]] = [state.postTypes[i], state.postTypes[i+1]];
+          saveState(); renderSettingsPostTypes();
+        } else if (action === "remove") {
+          const t = state.postTypes[i];
+          const usedBy = state.posts.filter(p => p.tipo === t.id).length;
+          let msg = `Remover o tipo "${t.label}"?`;
+          if (usedBy > 0) msg += `\n\nAtenção: ${usedBy} post(s) estão com este tipo. Eles vão continuar existindo mas sem cor. Continuar?`;
+          if (!confirm(msg)) return;
+          state.postTypes.splice(i, 1);
+          saveState();
+          renderSettingsPostTypes();
+          if (activeView === "postsCalendario") renderPostsCalendar();
+        }
+      };
+    });
+  }
+  function addNewPostType() {
+    const label = document.getElementById("newPostTypeLabel").value.trim();
+    if (!label) { alert("Informe um nome para o tipo."); return; }
+    let id = slugify(label);
+    while (state.postTypes.find(t => t.id === id)) id = id + "_" + uid().slice(0,3);
+    const used = state.postTypes.map(t => t.bg);
+    const free = COLOR_PALETTE.find(c => !used.includes(c.bg)) || COLOR_PALETTE[0];
+    state.postTypes.push({ id, label, bg: free.bg, color: free.color });
+    saveState();
+    renderSettingsPostTypes();
+    document.getElementById("newPostTypeLabel").value = "";
+    document.getElementById("newPostTypeLabel").focus();
+  }
+
   // ---- Color Picker ----
   function openColorPicker(callback) {
     colorPickerCallback = callback;
@@ -1982,6 +2094,8 @@
   };
   document.getElementById("addPrazoTypeBtn").onclick = addNewPrazoType;
   document.getElementById("newPrazoTypeLabel").addEventListener("keydown", (e) => { if (e.key === "Enter") addNewPrazoType(); });
+  document.getElementById("addPostTypeBtn").onclick = addNewPostType;
+  document.getElementById("newPostTypeLabel").addEventListener("keydown", (e) => { if (e.key === "Enter") addNewPostType(); });
 
   document.getElementById("postsTabBtn").onclick = () => switchView("postsCalendario");
   document.getElementById("postsCalPrevBtn").onclick = () => { postsCalMonth--; if (postsCalMonth < 0) { postsCalMonth = 11; postsCalYear--; } renderPostsCalendar(); };
