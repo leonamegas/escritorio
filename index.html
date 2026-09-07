@@ -181,6 +181,7 @@
 <div class="tabs-bar">
   <button class="tab cal-tab" id="dashTabBtn">📊 Visão Geral</button>
   <button class="tab cal-tab" id="calTabBtn">📅 Calendário</button>
+  <button class="tab cal-tab" id="postsTabBtn">📱 Calendário de Posts</button>
   <button class="tab cal-tab" id="teseTabBtn">📚 Teses</button>
   <nav class="tabs" id="tabs"></nav>
 </div>
@@ -217,6 +218,19 @@
       <button class="btn primary" id="calNewBtn">+ Novo prazo</button>
     </div>
     <div class="cal-grid" id="calGrid"></div>
+  </div>
+
+  <div id="postsCalendarioView" class="cal-wrap">
+    <div class="cal-header">
+      <div class="cal-nav">
+        <button class="btn small" id="postsCalPrevBtn">←</button>
+        <h2 id="postsCalMonthLabel"></h2>
+        <button class="btn small" id="postsCalNextBtn">→</button>
+        <button class="btn small" id="postsCalTodayBtn">Hoje</button>
+      </div>
+      <button class="btn primary" id="postsCalNewBtn">+ Novo post</button>
+    </div>
+    <div class="cal-grid" id="postsCalGrid"></div>
   </div>
 
   <div id="tesesView" class="cal-wrap">
@@ -324,6 +338,38 @@
       <div class="right">
         <button class="btn" id="pCancelBtn">Cancelar</button>
         <button class="btn primary" id="pSaveBtn">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de post (Calendário de Posts) -->
+<div class="modal-bg" id="postModalBg">
+  <div class="modal">
+    <h2 id="postModalTitle">Novo post</h2>
+    <div class="field">
+      <label for="postTitulo">Título / Tema do post</label>
+      <input id="postTitulo" type="text" placeholder="Ex: Reels sobre negativação indevida">
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label for="postData">Data</label>
+        <input id="postData" type="date">
+      </div>
+      <div class="field">
+        <label for="postHora">Hora (opcional)</label>
+        <input id="postHora" type="time">
+      </div>
+    </div>
+    <div class="field">
+      <label for="postTexto">O que vai postar</label>
+      <textarea id="postTexto" placeholder="Roteiro, legenda, ideia, link de referência..." style="min-height:160px;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger" id="postDeleteBtn" style="display:none;">Excluir</button>
+      <div class="right">
+        <button class="btn" id="postCancelBtn">Cancelar</button>
+        <button class="btn primary" id="postSaveBtn">Salvar</button>
       </div>
     </div>
   </div>
@@ -573,12 +619,15 @@
   let dragSrcItemId = null;
   let dragSrcCatId = null;
   let colorPickerCallback = null;
-  let activeView = "categoria"; // categoria | calendario | teses | dashboard
+  let activeView = "categoria"; // categoria | calendario | postsCalendario | teses | dashboard
   const __today0 = new Date();
   let calYear = __today0.getFullYear();
   let calMonth = __today0.getMonth();
   let editingPrazoId = null;
   let editingTeseId = null;
+  let postsCalYear = __today0.getFullYear();
+  let postsCalMonth = __today0.getMonth();
+  let editingPostId = null;
 
   function normalizeState(s) {
     s = s && typeof s === "object" ? s : {};
@@ -600,6 +649,7 @@
       s.prazoTypes = JSON.parse(JSON.stringify(DEFAULT_PRAZO_TYPES));
     }
     if (!s.teses || !Array.isArray(s.teses)) s.teses = [];
+    if (!s.posts || !Array.isArray(s.posts)) s.posts = [];
     return s;
   }
   function loadState() {
@@ -799,22 +849,26 @@
       el.appendChild(btn);
     });
     document.getElementById("calTabBtn").classList.toggle("active", activeView === "calendario");
+    document.getElementById("postsTabBtn").classList.toggle("active", activeView === "postsCalendario");
     document.getElementById("teseTabBtn").classList.toggle("active", activeView === "teses");
     document.getElementById("dashTabBtn").classList.toggle("active", activeView === "dashboard");
   }
 
-  // ========== VIEW SWITCH (categoria vs calendário vs teses vs dashboard) ==========
+  // ========== VIEW SWITCH (categoria vs calendário vs calendário de posts vs teses vs dashboard) ==========
   function switchView(view) {
     activeView = view;
     document.getElementById("categoriaView").style.display = view === "categoria" ? "" : "none";
     document.getElementById("calendarioView").classList.toggle("active", view === "calendario");
+    document.getElementById("postsCalendarioView").classList.toggle("active", view === "postsCalendario");
     document.getElementById("tesesView").classList.toggle("active", view === "teses");
     document.getElementById("dashboardView").classList.toggle("active", view === "dashboard");
     document.getElementById("calTabBtn").classList.toggle("active", view === "calendario");
+    document.getElementById("postsTabBtn").classList.toggle("active", view === "postsCalendario");
     document.getElementById("teseTabBtn").classList.toggle("active", view === "teses");
     document.getElementById("dashTabBtn").classList.toggle("active", view === "dashboard");
     document.querySelectorAll("#tabs .tab").forEach(t => { if (view !== "categoria") t.classList.remove("active"); });
     if (view === "calendario") renderCalendar();
+    if (view === "postsCalendario") renderPostsCalendar();
     if (view === "teses") renderTeses();
     if (view === "dashboard") renderDashboard();
   }
@@ -972,6 +1026,7 @@
   }
   function renderAll() {
     renderTabs(); renderList(); updateSubline(); renderAlertBanner();
+    if (activeView === "postsCalendario") renderPostsCalendar();
     if (activeView === "teses") renderTeses();
     if (activeView === "dashboard") renderDashboard();
   }
@@ -1036,6 +1091,112 @@
       }
       grid.appendChild(div);
     });
+  }
+
+  // ========== CALENDÁRIO DE POSTS ==========
+  function renderPostsCalendar() {
+    const label = document.getElementById("postsCalMonthLabel");
+    label.textContent = `${MONTH_NAMES[postsCalMonth]} de ${postsCalYear}`;
+    const grid = document.getElementById("postsCalGrid");
+    grid.innerHTML = "";
+    DOW_NAMES.forEach(d => {
+      const el = document.createElement("div");
+      el.className = "cal-dow";
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+    const firstOfMonth = new Date(postsCalYear, postsCalMonth, 1);
+    const startDow = firstOfMonth.getDay();
+    const daysInMonth = new Date(postsCalYear, postsCalMonth + 1, 0).getDate();
+    const daysInPrevMonth = new Date(postsCalYear, postsCalMonth, 0).getDate();
+    const tStr = todayStr();
+
+    const cells = [];
+    for (let i = startDow - 1; i >= 0; i--) {
+      cells.push({ day: daysInPrevMonth - i, other: true, dateStr: null });
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      cells.push({ day: d, other: false, dateStr: `${postsCalYear}-${pad2(postsCalMonth+1)}-${pad2(d)}` });
+    }
+    let nextDay = 1;
+    while (cells.length % 7 !== 0) {
+      cells.push({ day: nextDay++, other: true, dateStr: null });
+    }
+
+    cells.forEach(cell => {
+      const div = document.createElement("div");
+      div.className = "cal-day" + (cell.other ? " other-month" : "") + (cell.dateStr === tStr ? " today-cell" : "");
+      const num = document.createElement("div");
+      num.className = "cal-daynum";
+      num.textContent = cell.day;
+      div.appendChild(num);
+      if (cell.dateStr) {
+        const posts = (state.posts || []).filter(p => p.data === cell.dateStr).sort((a,b) => (a.hora||"").localeCompare(b.hora||""));
+        const maxShow = 3;
+        posts.slice(0, maxShow).forEach(p => {
+          const chip = document.createElement("div");
+          chip.className = "cal-chip";
+          chip.style.background = "#ede9fe"; chip.style.color = "#5b21b6";
+          chip.textContent = (p.hora ? p.hora + " " : "") + p.titulo;
+          chip.title = p.titulo;
+          chip.onclick = (e) => { e.stopPropagation(); openPostModal(p.id); };
+          div.appendChild(chip);
+        });
+        if (posts.length > maxShow) {
+          const more = document.createElement("div");
+          more.className = "cal-more";
+          more.textContent = `+${posts.length - maxShow} mais`;
+          div.appendChild(more);
+        }
+        div.onclick = () => openPostModal(null, cell.dateStr);
+      }
+      grid.appendChild(div);
+    });
+  }
+  function openPostModal(id, presetDate) {
+    editingPostId = id || null;
+    if (id) {
+      const p = state.posts.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById("postModalTitle").textContent = "Editar post";
+      document.getElementById("postTitulo").value = p.titulo || "";
+      document.getElementById("postData").value = p.data || "";
+      document.getElementById("postHora").value = p.hora || "";
+      document.getElementById("postTexto").value = p.texto || "";
+      document.getElementById("postDeleteBtn").style.display = "inline-block";
+    } else {
+      document.getElementById("postModalTitle").textContent = "Novo post";
+      document.getElementById("postTitulo").value = "";
+      document.getElementById("postData").value = presetDate || "";
+      document.getElementById("postHora").value = "";
+      document.getElementById("postTexto").value = "";
+      document.getElementById("postDeleteBtn").style.display = "none";
+    }
+    document.getElementById("postModalBg").classList.add("open");
+    setTimeout(() => document.getElementById("postTitulo").focus(), 50);
+  }
+  function closePostModal() {
+    document.getElementById("postModalBg").classList.remove("open");
+    editingPostId = null;
+  }
+  function savePostModal() {
+    const data = {
+      titulo: document.getElementById("postTitulo").value.trim(),
+      data: document.getElementById("postData").value,
+      hora: document.getElementById("postHora").value,
+      texto: document.getElementById("postTexto").value.trim()
+    };
+    if (!data.titulo) { alert("Informe um título/tema para o post."); return; }
+    if (!data.data) { alert("Informe a data do post."); return; }
+    if (editingPostId) {
+      const p = state.posts.find(x => x.id === editingPostId);
+      Object.assign(p, data);
+    } else {
+      state.posts.push({ id: uid(), criado: Date.now(), ...data });
+    }
+    saveState();
+    closePostModal();
+    if (activeView === "postsCalendario") renderPostsCalendar();
   }
 
   // ========== DRAG & DROP CARDS ==========
@@ -1822,6 +1983,24 @@
   document.getElementById("addPrazoTypeBtn").onclick = addNewPrazoType;
   document.getElementById("newPrazoTypeLabel").addEventListener("keydown", (e) => { if (e.key === "Enter") addNewPrazoType(); });
 
+  document.getElementById("postsTabBtn").onclick = () => switchView("postsCalendario");
+  document.getElementById("postsCalPrevBtn").onclick = () => { postsCalMonth--; if (postsCalMonth < 0) { postsCalMonth = 11; postsCalYear--; } renderPostsCalendar(); };
+  document.getElementById("postsCalNextBtn").onclick = () => { postsCalMonth++; if (postsCalMonth > 11) { postsCalMonth = 0; postsCalYear++; } renderPostsCalendar(); };
+  document.getElementById("postsCalTodayBtn").onclick = () => { const t = new Date(); postsCalYear = t.getFullYear(); postsCalMonth = t.getMonth(); renderPostsCalendar(); };
+  document.getElementById("postsCalNewBtn").onclick = () => openPostModal(null);
+  document.getElementById("postCancelBtn").onclick = closePostModal;
+  document.getElementById("postSaveBtn").onclick = savePostModal;
+  document.getElementById("postModalBg").onclick = (e) => { if (e.target.id === "postModalBg") closePostModal(); };
+  document.getElementById("postDeleteBtn").onclick = () => {
+    if (!editingPostId) return;
+    if (confirm("Excluir este post?")) {
+      state.posts = state.posts.filter(p => p.id !== editingPostId);
+      saveState();
+      closePostModal();
+      if (activeView === "postsCalendario") renderPostsCalendar();
+    }
+  };
+
   document.getElementById("dashTabBtn").onclick = () => switchView("dashboard");
 
   document.getElementById("teseTabBtn").onclick = () => switchView("teses");
@@ -1879,7 +2058,7 @@
   document.getElementById("sortBy").onchange = renderList;
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { closeModal(); closeSettings(); closeColorPicker(); closePrazoModal(); closeTeseModal(); }
+    if (e.key === "Escape") { closeModal(); closeSettings(); closeColorPicker(); closePrazoModal(); closeTeseModal(); closePostModal(); }
   });
 
   renderAll();
