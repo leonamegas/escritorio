@@ -71,9 +71,9 @@
   .tab.active { background: var(--accent); color: #fff; font-weight: 600; }
   .tab .count { margin-left: auto; background: rgba(255,255,255,.14); color: inherit; padding: 1.5px 9px; border-radius: 999px; font-size:15.5px; font-weight: 600; flex-shrink: 0; }
   .tab.active .count { background: rgba(255,255,255,.28); }
-  .tab.dragging { opacity: 0.4; }
-  .tab.drop-target { box-shadow: inset 3px 0 0 0 var(--accent); }
-  .tab[draggable="true"] { cursor: grab; }
+  .tab.dragging, .gst-wrap .btn.dragging { opacity: 0.4; }
+  .tab.drop-target, .gst-wrap .btn.drop-target { box-shadow: inset 3px 0 0 0 var(--accent); }
+  .tab[draggable="true"], .gst-wrap .btn[draggable="true"] { cursor: grab; }
   .side-cats .tab > span:first-child { flex-shrink: 0; }
   .side-cats .tab .tab-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
 
@@ -1424,13 +1424,17 @@
       const selectedId = (level + 1 < chain.length) ? chain[level + 1].id : activeTab;
       const row = document.createElement("div");
       row.className = "group-subtabs-row";
-      kids.forEach(k => {
+      kids.forEach((k, kidx) => {
         const wrap = document.createElement("span");
         wrap.className = "gst-wrap";
         const b = document.createElement("button");
         b.className = "btn small" + (k.id === selectedId ? " active" : "");
         b.innerHTML = `<span>${escapeHtml(k.icon || "•")}</span><span>${escapeHtml(k.label)}</span>`;
-        b.onclick = () => { navigateToCategoria(k.id); renderAll(); };
+        b.onclick = () => {
+          if (b.classList.contains("dragging")) return;
+          navigateToCategoria(k.id); renderAll();
+        };
+        attachTabDnD(b, k, kidx);
         wrap.appendChild(b);
         if (k.id === selectedId) {
           const outBtn = document.createElement("button");
@@ -2053,6 +2057,10 @@
     catItems.forEach((it, i) => it.ordem = i);
     saveState();
   }
+  // cat's e a que compartilham o mesmo pai (ambos de nível principal, ou ambos dentro do
+  // mesmo grupo) podem ser reordenadas por arrastar — usado tanto na barra lateral (topo)
+  // quanto na barra de subabas dentro de um grupo (renderGroupSubtabsBar), permitindo
+  // arrastar pra reordenar em qualquer nível de aninhamento.
   function attachTabDnD(tabEl, cat, idx) {
     tabEl.draggable = true;
     tabEl.addEventListener("dragstart", (e) => {
@@ -2063,11 +2071,13 @@
     });
     tabEl.addEventListener("dragend", () => {
       tabEl.classList.remove("dragging");
-      document.querySelectorAll(".tab.drop-target").forEach(t => t.classList.remove("drop-target"));
+      document.querySelectorAll(".tab.drop-target, .gst-wrap .btn.drop-target").forEach(t => t.classList.remove("drop-target"));
       dragSrcCatId = null;
     });
     tabEl.addEventListener("dragover", (e) => {
       if (!dragSrcCatId || dragSrcCatId === cat.id) return;
+      const src = state.categorias.find(c => c.id === dragSrcCatId);
+      if (!src || (src.parent || null) !== (cat.parent || null)) return;
       e.preventDefault();
       e.dataTransfer.dropEffect = "move";
       tabEl.classList.add("drop-target");
@@ -2076,6 +2086,8 @@
     tabEl.addEventListener("drop", (e) => {
       e.preventDefault();
       if (!dragSrcCatId || dragSrcCatId === cat.id) return;
+      const src = state.categorias.find(c => c.id === dragSrcCatId);
+      if (!src || (src.parent || null) !== (cat.parent || null)) return;
       const fromIdx = state.categorias.findIndex(c => c.id === dragSrcCatId);
       const toIdx = state.categorias.findIndex(c => c.id === cat.id);
       if (fromIdx < 0 || toIdx < 0) return;
