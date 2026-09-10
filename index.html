@@ -675,6 +675,22 @@
   </div>
 </div>
 
+<div class="modal-bg" id="createSubcatModalBg">
+  <div class="modal">
+    <h2 id="createSubcatTitle">➕ Nova categoria</h2>
+    <p class="help-text">Cria uma categoria nova já como subtópico desta — sem precisar criar em separado e mover depois.</p>
+    <div class="add-row">
+      <input id="newSubcatIcon" class="icon-input" type="text" placeholder="📌" maxlength="3">
+      <button type="button" class="emoji-pick-btn" id="newSubcatIconPickBtn" title="Escolher emoji">😀</button>
+      <input id="newSubcatLabel" class="label-input" type="text" placeholder="Nome da nova categoria">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="createSubcatCancelBtn">Fechar</button>
+      <button class="btn primary" id="createSubcatConfirmBtn">+ Criar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function() {
   const STORAGE_KEY = "painel_escritorio_v2";
@@ -1234,6 +1250,46 @@
     }
     document.getElementById("moveCatModalBg").classList.add("open");
   }
+  // Cria uma categoria nova já nascendo como subtópico de "parentId" — sem precisar
+  // criar em separado e depois mover. Funciona mesmo se "parentId" ainda não tiver
+  // nenhum subtópico (mesmo caminho "bootstrap" do botão 📂).
+  function createChildCategoria(parentId, label, icon) {
+    let id = slugify(label);
+    while (state.categorias.find(c => c.id === id)) id = id + "_" + uid().slice(0,3);
+    state.categorias.push({ id, label, icon: icon || "•", modo: "lista", noCalendario: false, parent: parentId });
+    groupSubActive[parentId] = id;
+    saveState();
+    return id;
+  }
+  let _createSubcatParentId = null;
+  function openCreateSubcatModal(parentId) {
+    const parent = state.categorias.find(c => c.id === parentId);
+    if (!parent) return;
+    _createSubcatParentId = parentId;
+    document.getElementById("createSubcatTitle").textContent = `➕ Nova categoria dentro de "${parent.label}"`;
+    document.getElementById("newSubcatIcon").value = "";
+    document.getElementById("newSubcatLabel").value = "";
+    document.getElementById("createSubcatModalBg").classList.add("open");
+    setTimeout(() => document.getElementById("newSubcatLabel").focus(), 30);
+  }
+  function closeCreateSubcatModal() {
+    document.getElementById("createSubcatModalBg").classList.remove("open");
+    _createSubcatParentId = null;
+  }
+  function confirmCreateSubcat() {
+    if (!_createSubcatParentId) return;
+    const parentId = _createSubcatParentId;
+    const parent = state.categorias.find(c => c.id === parentId);
+    const icon = document.getElementById("newSubcatIcon").value.trim() || "•";
+    const label = document.getElementById("newSubcatLabel").value.trim();
+    if (!label) { toast("Digite um nome para a nova categoria."); return; }
+    const newId = createChildCategoria(parentId, label, icon);
+    navigateToCategoria(newId);
+    closeCreateSubcatModal();
+    renderSettingsCategorias();
+    renderAll();
+    toast(`"${label}" criada dentro de "${parent ? parent.label : ''}".`);
+  }
   function toast(msg) {
     // painel escritório não tem toast dedicado — usa o banner de alerta como feedback rápido e discreto
     const el = document.getElementById("alertBanner");
@@ -1396,6 +1452,11 @@
         }
         row.appendChild(wrap);
       });
+      const newBtn = document.createElement("button");
+      newBtn.className = "btn small dashed";
+      newBtn.textContent = "+ Nova categoria aqui";
+      newBtn.onclick = () => openCreateSubcatModal(ancestor.id);
+      row.appendChild(newBtn);
       const moveBtn = document.createElement("button");
       moveBtn.className = "btn small dashed";
       moveBtn.textContent = "+ Mover aba pra cá";
@@ -2380,6 +2441,7 @@
         <label class="planilha-toggle" title="Mostrar os itens com data desta aba também no Calendário de Prazos">
           <input type="checkbox" data-action="toggle-calendario" data-i="${idx}" ${c.noCalendario ? "checked" : ""}>📅
         </label>
+        <button class="icon-btn" title="Criar categoria nova já dentro desta" data-action="create-into" data-i="${idx}">➕</button>
         <button class="icon-btn" title="Mover para dentro de outra aba (virar subtópico)" data-action="move-into" data-i="${idx}">📂</button>
         <button class="icon-btn" title="Subir" data-action="up" data-i="${idx}">↑</button>
         <button class="icon-btn" title="Descer" data-action="down" data-i="${idx}">↓</button>
@@ -2421,6 +2483,10 @@
           saveState();
           renderSettingsCategorias();
           if (activeView === "calendario") renderCalendar();
+          return;
+        }
+        if (action === "create-into") {
+          openCreateSubcatModal(state.categorias[i].id);
           return;
         }
         if (action === "move-into") {
@@ -2810,6 +2876,16 @@
 
   document.getElementById("moveCatCancelBtn").onclick = closeMoveCatModal;
   document.getElementById("moveCatModalBg").onclick = (e) => { if (e.target.id === "moveCatModalBg") closeMoveCatModal(); };
+
+  document.getElementById("createSubcatCancelBtn").onclick = closeCreateSubcatModal;
+  document.getElementById("createSubcatConfirmBtn").onclick = confirmCreateSubcat;
+  document.getElementById("createSubcatModalBg").onclick = (e) => { if (e.target.id === "createSubcatModalBg") closeCreateSubcatModal(); };
+  document.getElementById("newSubcatLabel").addEventListener("keydown", (e) => { if (e.key === "Enter") confirmCreateSubcat(); });
+  document.getElementById("newSubcatIconPickBtn").onclick = (e) => {
+    openEmojiPicker(e.currentTarget, (emoji) => {
+      document.getElementById("newSubcatIcon").value = emoji;
+    });
+  };
 
   document.getElementById("calTabBtn").onclick = () => switchView("calendario");
   document.getElementById("calPrevBtn").onclick = () => {
