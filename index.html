@@ -458,6 +458,12 @@
   .sidebar-resizer:hover::after,body.resizing-sidebar .sidebar-resizer::after{background:var(--primary, var(--accent));}
   body.resizing-sidebar{cursor:col-resize;user-select:none;-webkit-user-select:none;}
   @media (max-width:880px){.sidebar-resizer{display:none;}}
+
+  /* Conteúdo das abas um pouco maior (menu lateral mantém o tamanho) */
+  :root{--content-zoom:1.1;}
+  main{zoom:var(--content-zoom);}
+  .modal{zoom:var(--content-zoom);}
+  .cal-view-toggle .btn.active-view{background:var(--accent);border-color:var(--accent);}
 </style>
 </head>
 <body>
