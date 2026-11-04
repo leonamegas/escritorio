@@ -464,6 +464,31 @@
   main{zoom:var(--content-zoom);}
   .modal{zoom:var(--content-zoom);}
   .cal-view-toggle .btn.active-view{background:var(--accent);border-color:var(--accent);}
+
+  /* ===== Mapa mental ===== */
+  .mm-bar{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+  .mm-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .mm-select{max-width:260px;}
+  .mm-sep{width:1px;height:22px;background:var(--border);margin:0 2px;}
+  .mm-colors{display:inline-flex;gap:6px;align-items:center;}
+  .mm-swatch{width:22px;height:22px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--border);cursor:pointer;padding:0;}
+  .mm-swatch:hover{box-shadow:0 0 0 2px var(--text-soft,#6b7385);}
+  .mm-auto{background:#fff;color:#6b7385;font-size:12px;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
+  .mm-zoomgrp{display:inline-flex;gap:6px;align-items:center;margin-left:auto;}
+  .mm-zoom{min-width:46px;text-align:center;font-size:12.5px;color:var(--text-soft,#6b7385);}
+  .mm-wrap{position:relative;height:calc((100vh - 240px) / var(--content-zoom,1));min-height:420px;background-color:#fff;background-image:radial-gradient(#e3e6ec 1px,transparent 1px);background-size:22px 22px;border:1px solid var(--border);border-radius:12px;overflow:hidden;outline:none;cursor:grab;}
+  .mm-wrap.panning{cursor:grabbing;}
+  .mm-wrap:focus-visible{box-shadow:0 0 0 2px var(--accent-soft,#eaeefb);}
+  .mm-svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+  .mm-node{cursor:pointer;}
+  .mm-node .mm-tog{opacity:0;cursor:pointer;transition:opacity .12s;}
+  .mm-node:hover .mm-tog,.mm-node.sel .mm-tog,.mm-node .mm-tog.on{opacity:1;}
+  .mm-add{cursor:pointer;}
+  .mm-probe{position:absolute;left:0;top:0;width:100px;height:1px;visibility:hidden;pointer-events:none;}
+  .mm-input{width:100%;height:100%;box-sizing:border-box;text-align:center;border:2px solid #2563eb;border-radius:10px;background:#fff;color:#1b2433;padding:0 8px;font-family:inherit;outline:none;}
+  .mm-hint{font-size:12.5px;color:var(--text-soft,#6b7385);margin-top:8px;line-height:1.5;}
+  .mm-empty{text-align:center;padding:56px 20px;background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius);color:var(--text-soft,#6b7385);}
+  .mm-empty-ico{font-size:40px;margin-bottom:6px;}
 </style>
 </head>
 <body>
@@ -485,6 +510,7 @@
       <button class="tab cal-tab" id="calTabBtn"><span>📅</span><span>Calendário</span></button>
       <button class="tab cal-tab" id="postsTabBtn"><span>📱</span><span>Calendário de Posts</span></button>
       <button class="tab cal-tab" id="teseTabBtn"><span>📚</span><span>Teses</span></button>
+      <button class="tab cal-tab" id="mapaTabBtn"><span>🧠</span><span>Mapa mental</span></button>
       <div class="sidebar-section-label">Categorias</div>
       <nav class="tabs side-cats" id="tabs"></nav>
     </nav>
@@ -589,6 +615,7 @@
     </div>
     <div id="dashGrid" class="dash-grid"></div>
   </div>
+  <div id="mapaView" class="cal-wrap"></div>
     </main>
   </div>
 </div>
@@ -884,6 +911,506 @@
 </div>
 
 <script>
+/* ===== Mapa mental (estilo MindMeister) — módulo independente =====
+   Uso: MindMapApp.create({ root: elemento, getMaps: ()=>array, save: ()=>void })
+   Dados: array de mapas { id, titulo, criado, atualizado, root:{ id, text, color?, collapsed?, side?, children:[] } } */
+window.MindMapApp = (function(){
+  var NS = 'http://www.w3.org/2000/svg';
+  var FONT = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+  var PALETTE = ['#2563eb','#0e9f6e','#d97706','#e11d48','#7c3aed','#0891b2','#c2410c','#475569'];
+  var ROOT_FILL = '#1e3a8a';
+  var MAXW = 280, HGAP = 46, ROOT_GAP = 78, VGAP = 14;
+  var _ctx = null;
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function measureCtx(){ if(!_ctx){ try{ _ctx = document.createElement('canvas').getContext('2d'); }catch(e){} } return _ctx; }
+  function textW(str, size, weight){
+    var c = measureCtx();
+    if(c){ c.font = weight + ' ' + size + 'px ' + FONT; return c.measureText(str).width; }
+    return str.length * size * 0.55;
+  }
+  function wrap(text, size, weight, maxw){
+    var out = [], paras = String(text||'').split('\n');
+    paras.forEach(function(p){
+      var words = p.split(/\s+/).filter(Boolean), line = '';
+      if(!words.length){ out.push(''); return; }
+      words.forEach(function(w){
+        while(textW(w,size,weight) > maxw && w.length > 1){
+          var cut = w.length; while(cut > 1 && textW(w.slice(0,cut),size,weight) > maxw) cut--;
+          if(line){ out.push(line); line=''; }
+          out.push(w.slice(0,cut)); w = w.slice(cut);
+        }
+        var t = line ? line + ' ' + w : w;
+        if(textW(t,size,weight) > maxw && line){ out.push(line); line = w; } else line = t;
+      });
+      out.push(line);
+    });
+    return out.length ? out : [''];
+  }
+  function el(name, attrs, parent){
+    var e = document.createElementNS(NS, name);
+    if(attrs) for(var k in attrs) e.setAttribute(k, attrs[k]);
+    if(parent) parent.appendChild(e);
+    return e;
+  }
+  function h(tag, cls, html){ var e = document.createElement(tag); if(cls) e.className = cls; if(html != null) e.innerHTML = html; return e; }
+
+  function create(opts){
+    var rootEl = opts.root;
+    var maps = function(){ return opts.getMaps(); };
+    var activeId = null, selId = null, editing = null;
+    var view = { x: 0, y: 0, k: 1 };
+    var undo = [], redo = [];
+    var layoutCache = null, dragState = null, fitPending = true;
+    var ui = {};
+
+    /* ---------- dados ---------- */
+    function curMap(){
+      var list = maps(); if(!list.length) return null;
+      var m = list.filter(function(x){ return x.id === activeId; })[0];
+      if(!m){ m = list[0]; activeId = m.id; }
+      return m;
+    }
+    function newNode(text){ return { id: uid(), text: text, children: [] }; }
+    function index(m){
+      var idx = {};
+      (function walk(n, parent, depth){ idx[n.id] = { node: n, parent: parent, depth: depth }; (n.children||[]).forEach(function(c){ walk(c, n, depth+1); }); })(m.root, null, 0);
+      return idx;
+    }
+    function touch(m){ m.atualizado = new Date().toISOString(); }
+    function pushUndo(m){ undo.push(JSON.stringify(m.root)); if(undo.length > 60) undo.shift(); redo = []; }
+    function commit(m){ touch(m); opts.save(); }
+    function branchColor(idx, id){
+      var info = idx[id]; if(!info) return ROOT_FILL;
+      var n = info.node, p = info;
+      while(p){ if(p.node.color) return p.node.color; if(p.depth <= 1) break; p = idx[p.parent.id]; }
+      return info.depth === 0 ? ROOT_FILL : PALETTE[0];
+    }
+    function nextColor(m){
+      var used = {}; m.root.children.forEach(function(c){ if(c.color) used[c.color] = 1; });
+      for(var i = 0; i < PALETTE.length; i++) if(!used[PALETTE[i]]) return PALETTE[i];
+      return PALETTE[m.root.children.length % PALETTE.length];
+    }
+    function sideCount(m, s){ return m.root.children.filter(function(c){ return (c.side||'r') === s; }).length; }
+
+    /* ---------- layout ---------- */
+    function layout(m){
+      var idx = index(m), L = {}, bounds = { x0: 1e9, x1: -1e9, y0: 1e9, y1: -1e9 };
+      function prep(n, depth){
+        var size = depth === 0 ? 20 : depth === 1 ? 17 : 16, weight = depth <= 1 ? 600 : 500;
+        var lines = wrap(n.text || ' ', size, weight, MAXW);
+        var w = 0; lines.forEach(function(l){ w = Math.max(w, textW(l, size, weight)); });
+        var lh = Math.round(size * 1.3), padX = depth === 0 ? 22 : 14, padY = depth === 0 ? 14 : 9;
+        L[n.id] = { n: n, depth: depth, lines: lines, size: size, weight: weight, lh: lh, w: Math.max(Math.ceil(w) + padX * 2, depth === 0 ? 120 : 56), hh: lines.length * lh + padY * 2, x: 0, y: 0, sh: 0 };
+        if(!n.collapsed) n.children.forEach(function(c){ prep(c, depth + 1); });
+      }
+      prep(m.root, 0);
+      function sh(n){
+        var d = L[n.id];
+        var kids = n.collapsed ? [] : n.children;
+        if(!kids.length){ d.sh = d.hh; return d.sh; }
+        var sum = 0; kids.forEach(function(c){ sum += sh(c); }); sum += VGAP * (kids.length - 1);
+        d.kids = sum; d.sh = Math.max(d.hh, sum); return d.sh;
+      }
+      sh(m.root);
+      function place(n, dir, top){
+        var d = L[n.id], kids = n.collapsed ? [] : n.children;
+        d.y = top + d.sh / 2;
+        if(!kids.length) return;
+        var y = top + (d.sh - d.kids) / 2;
+        kids.forEach(function(c){
+          var cd = L[c.id];
+          cd.dir = dir;
+          cd.x = dir > 0 ? d.x + d.w + HGAP : d.x - HGAP - cd.w;
+          place(c, dir, y);
+          y += cd.sh + VGAP;
+        });
+      }
+      var rd = L[m.root.id]; rd.x = -rd.w / 2; rd.y = 0; rd.dir = 0;
+      var kids = m.root.collapsed ? [] : m.root.children;
+      var right = kids.filter(function(c){ return (c.side || 'r') !== 'l'; }), left = kids.filter(function(c){ return c.side === 'l'; });
+      [[right, 1], [left, -1]].forEach(function(pair){
+        var list = pair[0], dir = pair[1]; if(!list.length) return;
+        var tot = 0; list.forEach(function(c){ tot += L[c.id].sh; }); tot += VGAP * (list.length - 1);
+        var y = -tot / 2;
+        list.forEach(function(c){
+          var cd = L[c.id]; cd.dir = dir;
+          cd.x = dir > 0 ? rd.x + rd.w + ROOT_GAP : rd.x - ROOT_GAP - cd.w;
+          place(c, dir, y); y += cd.sh + VGAP;
+        });
+      });
+      for(var id in L){ var d = L[id]; bounds.x0 = Math.min(bounds.x0, d.x); bounds.x1 = Math.max(bounds.x1, d.x + d.w); bounds.y0 = Math.min(bounds.y0, d.y - d.hh / 2); bounds.y1 = Math.max(bounds.y1, d.y + d.hh / 2); }
+      layoutCache = { L: L, idx: idx, bounds: bounds };
+      return layoutCache;
+    }
+
+    /* ---------- UI base ---------- */
+    function build(){
+      rootEl.innerHTML = '';
+      ui.bar = h('div', 'mm-bar');
+      ui.empty = h('div', 'mm-empty');
+      ui.wrap = h('div', 'mm-wrap'); ui.wrap.tabIndex = 0;
+      ui.hint = h('div', 'mm-hint', 'Dicas: <b>Tab</b> novo filho · <b>Enter</b> novo irmão · <b>duplo clique</b> ou <b>F2</b> edita · <b>arraste</b> um ramo sobre outro para mover · <b>Espaço</b> recolhe · <b>rolagem</b> dá zoom · <b>Ctrl+Z</b> desfaz');
+      rootEl.appendChild(ui.bar); rootEl.appendChild(ui.empty); rootEl.appendChild(ui.wrap); rootEl.appendChild(ui.hint);
+      ui.svg = el('svg', { 'class': 'mm-svg' }); ui.wrap.appendChild(ui.svg);
+      ui.g = el('g', null, ui.svg); ui.gBranch = el('g', null, ui.g); ui.gNode = el('g', null, ui.g); ui.gOver = el('g', null, ui.g);
+      ui.probe = h('div', 'mm-probe'); ui.wrap.appendChild(ui.probe);
+      bindCanvas();
+    }
+    function btn(label, title, fn, cls){
+      var b = h('button', 'btn small' + (cls ? ' ' + cls : ''), label); b.type = 'button'; if(title) b.title = title;
+      b.addEventListener('mousedown', function(e){ e.preventDefault(); }); // não rouba foco do mapa
+      b.addEventListener('click', fn); return b;
+    }
+    function renderBar(){
+      var bar = ui.bar; bar.innerHTML = '';
+      var rowA = h('div', 'mm-row'), rowB = h('div', 'mm-row'); bar.appendChild(rowA); bar.appendChild(rowB);
+      var m = curMap(), list = maps();
+      var sel = h('select', 'mm-select');
+      list.forEach(function(x){ var o = document.createElement('option'); o.value = x.id; o.textContent = x.titulo || 'Sem título'; if(m && x.id === m.id) o.selected = true; sel.appendChild(o); });
+      sel.addEventListener('change', function(){ activeId = sel.value; selId = null; undo = []; redo = []; fitPending = true; render(); });
+      if(list.length) rowA.appendChild(sel);
+      rowA.appendChild(btn('+ Novo mapa', 'Criar um mapa mental', newMap, 'primary'));
+      if(!m) return;
+      rowA.appendChild(btn('✎ Renomear', 'Renomear este mapa', renameMap));
+      rowA.appendChild(btn('🗑 Excluir mapa', 'Excluir este mapa', deleteMap, 'danger'));
+      rowB.appendChild(btn('+ Filho', 'Novo ramo dentro do selecionado (Tab)', function(){ addChild(); }));
+      rowB.appendChild(btn('+ Irmão', 'Novo ramo ao lado do selecionado (Enter)', function(){ addSibling(); }));
+      rowB.appendChild(btn('🗑 Ramo', 'Excluir o ramo selecionado (Delete)', function(){ delSel(); }));
+      rowB.appendChild(h('span', 'mm-sep'));
+      var colors = h('span', 'mm-colors'); colors.title = 'Cor do ramo selecionado';
+      PALETTE.forEach(function(c){
+        var s = h('button', 'mm-swatch'); s.type = 'button'; s.style.background = c; s.title = 'Cor do ramo';
+        s.addEventListener('mousedown', function(e){ e.preventDefault(); });
+        s.addEventListener('click', function(){ setColor(c); }); colors.appendChild(s);
+      });
+      var auto = h('button', 'mm-swatch mm-auto', '∅'); auto.type = 'button'; auto.title = 'Cor automática (herda do ramo)';
+      auto.addEventListener('mousedown', function(e){ e.preventDefault(); }); auto.addEventListener('click', function(){ setColor(null); }); colors.appendChild(auto);
+      rowB.appendChild(colors);
+      rowB.appendChild(h('span', 'mm-sep'));
+      rowB.appendChild(btn('⊟ Recolher', 'Recolher todos os ramos', function(){ collapseAll(true); }));
+      rowB.appendChild(btn('⊞ Expandir', 'Expandir todos os ramos', function(){ collapseAll(false); }));
+      rowB.appendChild(h('span', 'mm-sep'));
+      rowB.appendChild(btn('↶', 'Desfazer (Ctrl+Z)', doUndo));
+      rowB.appendChild(btn('↷', 'Refazer (Ctrl+Y)', doRedo));
+      var zg = h('span', 'mm-zoomgrp'); rowA.appendChild(zg);
+      zg.appendChild(btn('−', 'Diminuir zoom', function(){ zoomAt(null, 1/1.2); }));
+      ui.zoomLbl = h('span', 'mm-zoom', '100%'); zg.appendChild(ui.zoomLbl);
+      zg.appendChild(btn('+', 'Aumentar zoom', function(){ zoomAt(null, 1.2); }));
+      zg.appendChild(btn('Ajustar à tela', 'Enquadrar o mapa todo', function(){ fit(); }));
+    }
+
+    /* ---------- desenho ---------- */
+    function applyView(){
+      ui.g.setAttribute('transform', 'translate(' + view.x + ' ' + view.y + ') scale(' + view.k + ')');
+      if(ui.zoomLbl) ui.zoomLbl.textContent = Math.round(view.k * 100) + '%';
+    }
+    function branchPath(pd, cd){
+      var x1, x2, y1 = pd.y, y2 = cd.y;
+      if(cd.dir > 0){ x1 = pd.x + pd.w; x2 = cd.x; } else { x1 = pd.x; x2 = cd.x + cd.w; }
+      var mx = (x1 + x2) / 2;
+      return 'M' + x1 + ' ' + y1 + ' C' + mx + ' ' + y1 + ' ' + mx + ' ' + y2 + ' ' + x2 + ' ' + y2;
+    }
+    function draw(){
+      var m = curMap(); if(!m) return;
+      var lay = layout(m), L = lay.L, idx = lay.idx;
+      if(selId && !idx[selId]) selId = null;
+      ui.gBranch.innerHTML = ''; ui.gNode.innerHTML = ''; ui.gOver.innerHTML = '';
+      Object.keys(L).forEach(function(id){
+        var d = L[id]; if(d.depth === 0) return;
+        var pd = L[idx[id].parent.id], col = branchColor(idx, id);
+        el('path', { d: branchPath(pd, d), fill: 'none', stroke: col, 'stroke-width': d.depth === 1 ? 4 : 2.5, 'stroke-linecap': 'round' }, ui.gBranch);
+      });
+      Object.keys(L).forEach(function(id){
+        var d = L[id], n = d.n, col = branchColor(idx, id), g = el('g', { 'class': 'mm-node' + (id === selId ? ' sel' : ''), 'data-id': id }, ui.gNode);
+        var top = d.y - d.hh / 2;
+        if(id === selId) el('rect', { x: d.x - 5, y: top - 5, width: d.w + 10, height: d.hh + 10, rx: d.depth === 0 ? 18 : 13, fill: 'none', stroke: '#f59e0b', 'stroke-width': 3 }, g);
+        var rx = d.depth === 0 ? 14 : d.depth === 1 ? 11 : 9;
+        var fill = d.depth === 2 || d.depth > 2 ? '#ffffff' : col, stroke = d.depth > 1 ? col : 'none';
+        el('rect', { 'class': 'mm-box', x: d.x, y: top, width: d.w, height: d.hh, rx: rx, fill: fill, stroke: stroke, 'stroke-width': 2.2 }, g);
+        var tcol = d.depth <= 1 ? '#ffffff' : '#1b2433';
+        var t = el('text', { x: d.x + d.w / 2, y: top, 'text-anchor': 'middle', fill: tcol, 'font-size': d.size, 'font-weight': d.weight, 'font-family': FONT, 'pointer-events': 'none' }, g);
+        d.lines.forEach(function(line, i){ var ts = el('tspan', { x: d.x + d.w / 2, dy: i === 0 ? (d.hh - d.lines.length * d.lh) / 2 + d.lh * 0.78 : d.lh }, t); ts.textContent = line || ' '; });
+        // botão de recolher/expandir
+        if(n.children.length){
+          var tx = d.dir < 0 ? d.x - 11 : d.x + d.w + 11; if(d.depth === 0) tx = d.x + d.w + 11;
+          var tg = el('g', { 'class': 'mm-tog' + (n.collapsed ? ' on' : ''), 'data-act': 'tog', 'data-id': id }, g);
+          el('circle', { cx: tx, cy: d.y, r: 10, fill: '#fff', stroke: col, 'stroke-width': 2 }, tg);
+          var tt = el('text', { x: tx, y: d.y + 4.5, 'text-anchor': 'middle', 'font-size': n.collapsed ? 11 : 15, 'font-weight': 700, fill: col, 'font-family': FONT, 'pointer-events': 'none' }, tg);
+          tt.textContent = n.collapsed ? String(countAll(n)) : '−';
+        }
+        // botão + (só no selecionado)
+        if(id === selId){
+          var ax, dir = d.depth === 0 ? 1 : d.dir;
+          ax = dir < 0 ? d.x - (n.children.length ? 34 : 14) : d.x + d.w + (n.children.length ? 34 : 14);
+          var ag = el('g', { 'class': 'mm-add', 'data-act': 'add', 'data-id': id }, g);
+          el('circle', { cx: ax, cy: d.y, r: 11, fill: col, stroke: '#fff', 'stroke-width': 2 }, ag);
+          var at = el('text', { x: ax, y: d.y + 5, 'text-anchor': 'middle', 'font-size': 17, 'font-weight': 700, fill: '#fff', 'font-family': FONT, 'pointer-events': 'none' }, ag);
+          at.textContent = '+';
+        }
+      });
+      applyView();
+      if(editing && idx[editing.id]) placeEditor();
+    }
+    function countAll(n){ var c = 0; (function w(x){ x.children.forEach(function(k){ c++; w(k); }); })(n); return c; }
+
+    /* ---------- coordenadas ---------- */
+    function kScale(){ var r = ui.probe.getBoundingClientRect(); return (r.width && ui.probe.offsetWidth) ? r.width / ui.probe.offsetWidth : 1; }
+    function toLocal(ev){ var r = ui.wrap.getBoundingClientRect(), k = kScale(); return { x: (ev.clientX - r.left) / k, y: (ev.clientY - r.top) / k }; }
+    function toMap(ev){ var p = toLocal(ev); return { x: (p.x - view.x) / view.k, y: (p.y - view.y) / view.k }; }
+    function viewSize(){ return { w: ui.wrap.clientWidth, h: ui.wrap.clientHeight }; }
+    function zoomAt(ev, f){
+      var vs = viewSize(), p = ev ? toLocal(ev) : { x: vs.w / 2, y: vs.h / 2 };
+      var nk = Math.max(0.2, Math.min(2.5, view.k * f)); f = nk / view.k;
+      view.x = p.x - (p.x - view.x) * f; view.y = p.y - (p.y - view.y) * f; view.k = nk; applyView();
+    }
+    function fit(){
+      var m = curMap(); if(!m) return; var lay = layout(m), b = lay.bounds, vs = viewSize();
+      if(!vs.w || !vs.h) return;
+      var bw = b.x1 - b.x0, bh = b.y1 - b.y0;
+      var k = Math.min((vs.w - 80) / bw, (vs.h - 80) / bh, 1.1); k = Math.max(0.25, k);
+      view.k = k; view.x = vs.w / 2 - (b.x0 + bw / 2) * k; view.y = vs.h / 2 - (b.y0 + bh / 2) * k; applyView();
+    }
+
+    /* ---------- operações ---------- */
+    function sel(){ var m = curMap(); if(!m) return null; var idx = index(m); return idx[selId || m.root.id]; }
+    function select(id){ selId = id; draw(); }
+    function reveal(id){
+      var d = layoutCache && layoutCache.L[id]; if(!d) return; var vs = viewSize(), k = view.k, pad = 60;
+      var l = view.x + d.x * k, r = view.x + (d.x + d.w) * k, t = view.y + (d.y - d.hh / 2) * k, b = view.y + (d.y + d.hh / 2) * k, dx = 0, dy = 0;
+      if(l < pad) dx = pad - l; else if(r > vs.w - pad) dx = vs.w - pad - r;
+      if(t < pad) dy = pad - t; else if(b > vs.h - pad) dy = vs.h - pad - b;
+      if(dx || dy){ view.x += dx; view.y += dy; applyView(); }
+    }
+    function startEdit(id, chain, selectAll){
+      var m = curMap(); if(!m) return; var idx = index(m); if(!idx[id]) return;
+      editing = { id: id, chain: !!chain, orig: idx[id].node.text }; selId = id; draw(); reveal(id);
+    }
+    function placeEditor(){
+      var d = layoutCache.L[editing.id]; if(!d) return;
+      var old = ui.gOver.querySelector('foreignObject'); if(old) return;
+      var w = Math.max(d.w + 20, 170), x = d.x + d.w / 2 - w / 2, hh = d.hh + 4;
+      var fo = el('foreignObject', { x: x, y: d.y - hh / 2, width: w, height: hh }, ui.gOver);
+      var inp = document.createElement('input'); inp.type = 'text'; inp.value = layoutCache.idx[editing.id].node.text; inp.className = 'mm-input';
+      inp.style.fontSize = d.size + 'px'; inp.style.fontWeight = d.weight; fo.appendChild(inp);
+      inp.focus(); inp.select();
+      setTimeout(function(){ if(document.activeElement !== inp && !done){ inp.focus(); inp.select(); } }, 0);
+      var done = false;
+      function finish(mode){ // mode: 'commit' | 'cancel' | 'enter' | 'tab'
+        if(done) return; done = true;
+        var m = curMap(), id = editing.id, chain = editing.chain, val = inp.value.trim();
+        editing = null;
+        if(m){ var idx = index(m), info = idx[id];
+          if(info && mode === 'cancel' && chain){
+            // ramo recém-criado: Esc mantém o que foi digitado; se nada foi digitado, descarta o ramo
+            if(val && val !== info.node.text){ info.node.text = val; commit(m); }
+            else if(info.parent){ info.parent.children.splice(info.parent.children.indexOf(info.node), 1); if(undo.length) undo.pop(); commit(m); selId = info.parent.id; }
+          } else if(info && mode !== 'cancel' && val !== info.node.text){ pushUndo(m); info.node.text = val || 'Sem título'; commit(m); }
+        }
+        draw(); ui.wrap.focus();
+        if(mode === 'tab') addChild(); else if(mode === 'enter' && chain) addSibling();
+      }
+      inp.addEventListener('keydown', function(e){
+        e.stopPropagation();
+        if(e.key === 'Enter'){ e.preventDefault(); finish('enter'); }
+        else if(e.key === 'Tab'){ e.preventDefault(); finish('tab'); }
+        else if(e.key === 'Escape'){ e.preventDefault(); finish('cancel'); }
+      });
+      inp.addEventListener('blur', function(){ finish('commit'); });
+      inp.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+    }
+    function addChild(){
+      var m = curMap(); if(!m) return; var info = sel(); if(!info) return;
+      pushUndo(m); var n = newNode('Nova ideia');
+      if(info.depth === 0){ n.color = nextColor(m); n.side = sideCount(m, 'r') <= sideCount(m, 'l') ? 'r' : 'l'; }
+      info.node.collapsed = false; info.node.children.push(n); commit(m);
+      selId = n.id; startEdit(n.id, true);
+    }
+    function addSibling(){
+      var m = curMap(); if(!m) return; var info = sel(); if(!info) return;
+      if(info.depth === 0) return addChild();
+      pushUndo(m); var n = newNode('Nova ideia');
+      var sibs = info.parent.children, i = sibs.indexOf(info.node);
+      if(info.depth === 1){ n.color = nextColor(m); n.side = sideCount(m, 'r') <= sideCount(m, 'l') ? 'r' : 'l'; }
+      sibs.splice(i + 1, 0, n); commit(m); selId = n.id; startEdit(n.id, true);
+    }
+    function delSel(){
+      var m = curMap(); if(!m) return; var info = sel(); if(!info) return;
+      if(info.depth === 0){ alert('O tópico central não pode ser excluído. Para apagar tudo, use "Excluir mapa".'); return; }
+      var cnt = countAll(info.node);
+      if(cnt > 0 && !confirm('Excluir este ramo e mais ' + cnt + (cnt === 1 ? ' ideia' : ' ideias') + ' dentro dele?')) return;
+      pushUndo(m); var sibs = info.parent.children, i = sibs.indexOf(info.node); sibs.splice(i, 1); commit(m);
+      selId = sibs[i] ? sibs[i].id : sibs[i - 1] ? sibs[i - 1].id : info.parent.id; draw();
+    }
+    function toggle(id){
+      var m = curMap(); if(!m) return; var info = index(m)[id]; if(!info || !info.node.children.length) return;
+      pushUndo(m); info.node.collapsed = !info.node.collapsed; commit(m); draw();
+    }
+    function collapseAll(flag){
+      var m = curMap(); if(!m) return; pushUndo(m);
+      (function w(n, depth){ if(n.children.length){ n.collapsed = depth === 0 ? false : flag; n.children.forEach(function(c){ w(c, depth + 1); }); } })(m.root, 0);
+      commit(m); draw(); fit();
+    }
+    function setColor(c){
+      var m = curMap(); if(!m) return; var info = sel(); if(!info) return;
+      if(info.depth === 0){ return; }
+      pushUndo(m); if(c) info.node.color = c; else delete info.node.color; commit(m); draw();
+    }
+    function doUndo(){
+      var m = curMap(); if(!m || !undo.length) return;
+      redo.push(JSON.stringify(m.root)); m.root = JSON.parse(undo.pop()); commit(m); draw();
+    }
+    function doRedo(){
+      var m = curMap(); if(!m || !redo.length) return;
+      undo.push(JSON.stringify(m.root)); m.root = JSON.parse(redo.pop()); commit(m); draw();
+    }
+    function newMap(){
+      var name = prompt('Nome do novo mapa mental (será o tópico central):', 'Novo mapa'); if(name === null) return;
+      name = name.trim() || 'Novo mapa';
+      var m = { id: uid(), titulo: name, criado: new Date().toISOString(), atualizado: new Date().toISOString(), root: { id: uid(), text: name, children: [] } };
+      maps().push(m); opts.save(); activeId = m.id; selId = m.root.id; undo = []; redo = []; fitPending = true; render();
+    }
+    function renameMap(){
+      var m = curMap(); if(!m) return; var name = prompt('Novo nome do mapa:', m.titulo); if(name === null) return;
+      name = name.trim(); if(!name) return; pushUndo(m); m.titulo = name; m.root.text = name; commit(m); render();
+    }
+    function deleteMap(){
+      var m = curMap(); if(!m) return;
+      if(!confirm('Excluir o mapa "' + m.titulo + '" inteiro? Essa ação não pode ser desfeita.')) return;
+      var list = maps(), i = list.indexOf(m); list.splice(i, 1); opts.save(); activeId = null; selId = null; undo = []; redo = []; fitPending = true; render();
+    }
+    function moveNode(m, id, targetId, zone, px){
+      var idx = index(m), a = idx[id], t = idx[targetId]; if(!a || !t || a.depth === 0) return false;
+      for(var p = t; p; p = p.parent ? idx[p.parent.id] : null){ if(p.node.id === id) return false; }
+      pushUndo(m);
+      var oldList = a.parent.children; oldList.splice(oldList.indexOf(a.node), 1);
+      if(zone === 'child' || t.depth === 0){
+        t.node.collapsed = false; t.node.children.push(a.node);
+        if(t.depth === 0){ var rc = layoutCache.L[m.root.id]; a.node.side = px < rc.x + rc.w / 2 ? 'l' : 'r'; if(!a.node.color) a.node.color = nextColor(m); }
+      } else {
+        var sibs = t.parent.children, ti = sibs.indexOf(t.node); sibs.splice(zone === 'before' ? ti : ti + 1, 0, a.node);
+        if(t.depth === 1){ a.node.side = t.node.side || 'r'; if(!a.node.color) a.node.color = nextColor(m); }
+      }
+      commit(m); return true;
+    }
+
+    /* ---------- interação ---------- */
+    function nodeAt(pt, skipId){
+      var L = layoutCache && layoutCache.L, best = null; if(!L) return null;
+      Object.keys(L).forEach(function(id){
+        var d = L[id]; if(id === skipId) return;
+        if(pt.x >= d.x - 4 && pt.x <= d.x + d.w + 4 && pt.y >= d.y - d.hh / 2 - 4 && pt.y <= d.y + d.hh / 2 + 4) best = id;
+      });
+      return best;
+    }
+    function bindCanvas(){
+      var svg = ui.svg;
+      svg.addEventListener('mousedown', function(ev){ if(ev.target.closest && ev.target.closest('foreignObject')) return; ev.preventDefault(); ui.wrap.focus(); });
+      svg.addEventListener('pointerdown', function(ev){
+        if(ev.button !== 0) return;
+        ui.wrap.focus();
+        var tgt = ev.target.closest ? ev.target.closest('[data-act],.mm-node') : null;
+        var act = tgt && tgt.getAttribute('data-act'), nodeG = ev.target.closest ? ev.target.closest('.mm-node') : null;
+        if(act === 'tog'){ ev.preventDefault(); toggle(tgt.getAttribute('data-id')); return; }
+        if(act === 'add'){ ev.preventDefault(); selId = tgt.getAttribute('data-id'); addChild(); return; }
+        if(nodeG){
+          var id = nodeG.getAttribute('data-id');
+          if(selId !== id){ selId = id; draw(); nodeG = ui.gNode.querySelector('[data-id="' + id + '"]'); }
+          dragState = { type: 'node', id: id, sx: ev.clientX, sy: ev.clientY, moved: false, pid: ev.pointerId };
+        } else {
+          dragState = { type: 'pan', sx: ev.clientX, sy: ev.clientY, vx: view.x, vy: view.y, moved: false, pid: ev.pointerId };
+        }
+        try{ svg.setPointerCapture(ev.pointerId); }catch(e){}
+      });
+      svg.addEventListener('pointermove', function(ev){
+        if(!dragState) return;
+        var dx = ev.clientX - dragState.sx, dy = ev.clientY - dragState.sy;
+        if(!dragState.moved && Math.abs(dx) + Math.abs(dy) < 5) return;
+        if(dragState.type === 'pan'){
+          if(!dragState.moved){ dragState.moved = true; ui.wrap.classList.add('panning'); }
+          var k = kScale(); view.x = dragState.vx + dx / k; view.y = dragState.vy + dy / k; applyView(); return;
+        }
+        var m = curMap(), info = m && index(m)[dragState.id]; if(!info || info.depth === 0) return;
+        dragState.moved = true;
+        var pt = toMap(ev), L = layoutCache.L, d = L[dragState.id];
+        ui.gOver.innerHTML = '';
+        // fantasma
+        var gh = el('rect', { x: pt.x - d.w / 2, y: pt.y - d.hh / 2, width: d.w, height: d.hh, rx: 10, fill: '#2563eb', opacity: 0.35, 'pointer-events': 'none' }, ui.gOver);
+        var tid = nodeAt(pt, dragState.id); dragState.target = null;
+        // não permite soltar em descendente
+        if(tid){ var ok = true; for(var p = layoutCache.idx[tid]; p; p = p.parent ? layoutCache.idx[p.parent.id] : null){ if(p.node.id === dragState.id){ ok = false; break; } } if(!ok) tid = null; }
+        if(tid){
+          var td = L[tid], rel = (pt.y - (td.y - td.hh / 2)) / td.hh, zone = 'child';
+          if(layoutCache.idx[tid].depth > 0){ if(rel < 0.28) zone = 'before'; else if(rel > 0.72) zone = 'after'; }
+          dragState.target = { id: tid, zone: zone, px: pt.x };
+          if(zone === 'child') el('rect', { x: td.x - 4, y: td.y - td.hh / 2 - 4, width: td.w + 8, height: td.hh + 8, rx: 13, fill: 'none', stroke: '#16a34a', 'stroke-width': 3.5, 'pointer-events': 'none' }, ui.gOver);
+          else { var ly = zone === 'before' ? td.y - td.hh / 2 - 6 : td.y + td.hh / 2 + 6; el('line', { x1: td.x, x2: td.x + td.w, y1: ly, y2: ly, stroke: '#16a34a', 'stroke-width': 4, 'stroke-linecap': 'round', 'pointer-events': 'none' }, ui.gOver); }
+        }
+      });
+      function endDrag(ev){
+        if(!dragState) return; var ds = dragState; dragState = null; ui.wrap.classList.remove('panning'); if(!editing) ui.wrap.focus();
+        try{ svg.releasePointerCapture(ds.pid); }catch(e){}
+        if(ds.type === 'node' && ds.moved){
+          var m = curMap(); if(m && ds.target && ev.type !== 'pointercancel'){ moveNode(m, ds.id, ds.target.id, ds.target.zone, ds.target.px); }
+          draw();
+        } else if(ds.type === 'pan' && !ds.moved){ selId = null; draw(); }
+      }
+      svg.addEventListener('pointerup', endDrag); svg.addEventListener('pointercancel', endDrag);
+      svg.addEventListener('dblclick', function(ev){
+        var nodeG = ev.target.closest && ev.target.closest('.mm-node');
+        if(nodeG && !(ev.target.closest('[data-act]'))){ startEdit(nodeG.getAttribute('data-id'), false); }
+      });
+      ui.wrap.addEventListener('wheel', function(ev){ ev.preventDefault(); zoomAt(ev, ev.deltaY < 0 ? 1.12 : 1 / 1.12); }, { passive: false });
+      ui.wrap.addEventListener('keydown', function(ev){
+        if(editing) return;
+        var m = curMap(); if(!m) return;
+        var key = ev.key, ctrl = ev.ctrlKey || ev.metaKey;
+        if(ctrl && (key === 'z' || key === 'Z')){ ev.preventDefault(); ev.shiftKey ? doRedo() : doUndo(); return; }
+        if(ctrl && (key === 'y' || key === 'Y')){ ev.preventDefault(); doRedo(); return; }
+        if(ctrl) return;
+        var info = sel(); if(!info) return;
+        if(key === 'Tab'){ ev.preventDefault(); addChild(); }
+        else if(key === 'Enter'){ ev.preventDefault(); addSibling(); }
+        else if(key === 'F2'){ ev.preventDefault(); startEdit(info.node.id, false); }
+        else if(key === 'Delete' || key === 'Backspace'){ ev.preventDefault(); delSel(); }
+        else if(key === ' '){ ev.preventDefault(); toggle(info.node.id); }
+        else if(key === 'Escape'){ selId = null; draw(); }
+        else if(key.indexOf('Arrow') === 0){ ev.preventDefault(); navigate(info, key); }
+      });
+      window.addEventListener('resize', function(){ if(ui.wrap.offsetParent) draw(); });
+    }
+    function navigate(info, key){
+      var m = curMap(), idx = index(m), n = info.node, dirTo;
+      var side = info.depth === 0 ? null : (function(){ var p = info; while(p.depth > 1) p = idx[p.parent.id]; return p.node.side === 'l' ? -1 : 1; })();
+      function go(node){ if(node){ selId = node.id; draw(); reveal(node.id); } }
+      if(key === 'ArrowUp' || key === 'ArrowDown'){
+        if(!info.parent) return; var sibs = info.parent.children;
+        if(info.depth === 1){ sibs = sibs.filter(function(c){ return (c.side || 'r') === (n.side || 'r'); }); }
+        var i = sibs.indexOf(n), j = key === 'ArrowUp' ? i - 1 : i + 1; go(sibs[j]); return;
+      }
+      var toward = key === 'ArrowRight' ? 1 : -1;
+      if(info.depth === 0){ var cs = n.children.filter(function(c){ return ((c.side || 'r') === 'l' ? -1 : 1) === toward; }); go(cs[0]); return; }
+      if(toward === side){ if(n.children.length && !n.collapsed) go(n.children[0]); else if(n.children.length){ toggle(n.id); } }
+      else go(info.parent);
+    }
+
+    /* ---------- render público ---------- */
+    function render(){
+      if(!ui.bar) build();
+      var m = curMap();
+      renderBar();
+      ui.empty.style.display = m ? 'none' : '';
+      ui.wrap.style.display = m ? '' : 'none'; ui.hint.style.display = m ? '' : 'none';
+      if(!m){ ui.empty.innerHTML = '<div class="mm-empty-ico">🧠</div><p><b>Nenhum mapa mental ainda.</b></p><p>Crie um mapa para organizar ideias, processos e estratégias em ramos, como no MindMeister.</p>'; return; }
+      if(!selId) selId = m.root.id;
+      draw();
+      if(fitPending){ requestAnimationFrame(function(){ if(ui.wrap.clientWidth){ fit(); fitPending = false; } }); }
+    }
+    return { render: render, fit: fit };
+  }
+  return { create: create };
+})();
+</script>
+<script>
 (function() {
   const STORAGE_KEY = "painel_escritorio_v2";
 
@@ -1012,7 +1539,7 @@
   let dragSrcCatId = null;
   let colorPickerCallback = null;
   let groupSubActive = {}; // parentCategoriaId -> id da subcategoria selecionada dentro do grupo (não persiste, só navegação)
-  let activeView = "categoria"; // categoria | calendario | postsCalendario | teses | dashboard
+  let activeView = "categoria"; // categoria | calendario | postsCalendario | teses | dashboard | mapa
   const __today0 = new Date();
   let calYear = __today0.getFullYear();
   let calMonth = __today0.getMonth();
@@ -1066,6 +1593,7 @@
       s.prazoTypes = JSON.parse(JSON.stringify(DEFAULT_PRAZO_TYPES));
     }
     if (!s.teses || !Array.isArray(s.teses)) s.teses = [];
+    if (!s.mapas || !Array.isArray(s.mapas)) s.mapas = [];
     if (!s.posts || !Array.isArray(s.posts)) s.posts = [];
     if (!s.postTypes || !Array.isArray(s.postTypes) || s.postTypes.length === 0) {
       s.postTypes = JSON.parse(JSON.stringify(DEFAULT_POST_TYPES));
@@ -1536,6 +2064,7 @@
     document.getElementById("postsTabBtn").classList.toggle("active", activeView === "postsCalendario");
     document.getElementById("teseTabBtn").classList.toggle("active", activeView === "teses");
     document.getElementById("dashTabBtn").classList.toggle("active", activeView === "dashboard");
+    document.getElementById("mapaTabBtn").classList.toggle("active", activeView === "mapa");
   }
 
   // ========== VIEW SWITCH (categoria vs calendário vs calendário de posts vs teses vs dashboard) ==========
@@ -1546,15 +2075,18 @@
     document.getElementById("postsCalendarioView").classList.toggle("active", view === "postsCalendario");
     document.getElementById("tesesView").classList.toggle("active", view === "teses");
     document.getElementById("dashboardView").classList.toggle("active", view === "dashboard");
+    document.getElementById("mapaView").classList.toggle("active", view === "mapa");
     document.getElementById("calTabBtn").classList.toggle("active", view === "calendario");
     document.getElementById("postsTabBtn").classList.toggle("active", view === "postsCalendario");
     document.getElementById("teseTabBtn").classList.toggle("active", view === "teses");
     document.getElementById("dashTabBtn").classList.toggle("active", view === "dashboard");
+    document.getElementById("mapaTabBtn").classList.toggle("active", view === "mapa");
     document.querySelectorAll("#tabs .tab").forEach(t => { if (view !== "categoria") t.classList.remove("active"); });
     if (view === "calendario") renderCalendar();
     if (view === "postsCalendario") renderPostsCalendar();
     if (view === "teses") renderTeses();
     if (view === "dashboard") renderDashboard();
+    if (view === "mapa") mapaApp.render();
     closeSidebarMobile();
   }
 
@@ -1896,6 +2428,7 @@
     if (activeView === "postsCalendario") renderPostsCalendar();
     if (activeView === "teses") renderTeses();
     if (activeView === "dashboard") renderDashboard();
+    if (activeView === "mapa") mapaApp.render();
   }
 
   // ========== CALENDÁRIO ==========
@@ -3170,6 +3703,8 @@
   document.getElementById("sidebarBackdrop").onclick = () => closeSidebarMobile();
 
   document.getElementById("teseTabBtn").onclick = () => switchView("teses");
+  const mapaApp = MindMapApp.create({ root: document.getElementById("mapaView"), getMaps: () => state.mapas, save: () => saveState() });
+  document.getElementById("mapaTabBtn").onclick = () => switchView("mapa");
   document.getElementById("teseNewBtn").onclick = () => openTeseModal(null);
   document.getElementById("teseSearch").addEventListener("input", () => renderTeses());
   document.getElementById("tCancelBtn").onclick = closeTeseModal;
