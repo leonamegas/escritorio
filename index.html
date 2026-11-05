@@ -1025,7 +1025,7 @@ window.MindMapApp = (function(){
     var activeId = null, selId = null, editing = null;
     var view = { x: 0, y: 0, k: 1 };
     var undo = [], redo = [];
-    var layoutCache = null, dragState = null, fitPending = true;
+    var layoutCache = null, dragState = null, fitPending = true, lastTap = { id: null, t: 0 };
     var ui = {};
 
     /* ---------- dados ---------- */
@@ -1139,6 +1139,7 @@ window.MindMapApp = (function(){
       if(!m) return;
       rowA.appendChild(btn('✎ Renomear', 'Renomear este mapa', renameMap));
       rowA.appendChild(btn('🗑 Excluir mapa', 'Excluir este mapa', deleteMap, 'danger'));
+      rowB.appendChild(btn('✎ Editar texto', 'Reescrever o texto do ramo selecionado (duplo clique ou F2)', function(){ var mm = curMap(); if(!mm) return; var i = index(mm)[selId || mm.root.id]; if(i) startEdit(i.node.id, false); }));
       rowB.appendChild(btn('+ Filho', 'Novo ramo dentro do selecionado (Tab)', function(){ addChild(); }));
       rowB.appendChild(btn('+ Irmão', 'Novo ramo ao lado do selecionado (Enter)', function(){ addSibling(); }));
       rowB.appendChild(btn('🗑 Ramo', 'Excluir o ramo selecionado (Delete)', function(){ delSel(); }));
@@ -1444,10 +1445,17 @@ window.MindMapApp = (function(){
           var m = curMap(); if(m && ds.target && ev.type !== 'pointercancel'){ moveNode(m, ds.id, ds.target.id, ds.target.zone, ds.target.px); }
           draw();
         } else if(ds.type === 'pan' && !ds.moved){ selId = null; draw(); }
+        else if(ds.type === 'node' && !ds.moved && ev.type !== 'pointercancel'){
+          /* duplo clique/toque detectado aqui (o evento dblclick não chega no nó por causa da captura do ponteiro) */
+          var now = Date.now();
+          if(lastTap.id === ds.id && now - lastTap.t < 450){ lastTap = { id: null, t: 0 }; startEdit(ds.id, false); }
+          else { lastTap = { id: ds.id, t: now }; }
+        }
       }
       svg.addEventListener('pointerup', endDrag); svg.addEventListener('pointercancel', endDrag);
       svg.addEventListener('dblclick', function(ev){
         var nodeG = ev.target.closest && ev.target.closest('.mm-node');
+        if(editing) return;
         if(nodeG && !(ev.target.closest('[data-act]'))){ startEdit(nodeG.getAttribute('data-id'), false); }
       });
       ui.wrap.addEventListener('wheel', function(ev){ ev.preventDefault(); zoomAt(ev, ev.deltaY < 0 ? 1.12 : 1 / 1.12); }, { passive: false });
