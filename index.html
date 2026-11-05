@@ -489,6 +489,62 @@
   .mm-hint{font-size:12.5px;color:var(--text-soft,#6b7385);margin-top:8px;line-height:1.5;}
   .mm-empty{text-align:center;padding:56px 20px;background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius);color:var(--text-soft,#6b7385);}
   .mm-empty-ico{font-size:40px;margin-bottom:6px;}
+
+  /* ===== Links, lixeira e busca ===== */
+  .lk-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .lk-chip{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:3px 10px;border:1px solid var(--border);border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:14px;text-decoration:none;line-height:1.35;}
+  .lk-chip:hover{border-color:var(--accent);text-decoration:none;}
+  .lk-chip .lk-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px;}
+  .lk-chip .lk-out{opacity:.55;font-size:12px;}
+  .lk-editor .lk-help{font-size:13px;color:var(--text-soft);margin:-2px 0 8px;}
+  .lk-edit-row{display:flex;gap:6px;margin-bottom:6px;align-items:center;}
+  .lk-edit-row input{min-width:0;}
+  .lk-in-name{flex:0 0 34%;}
+  .lk-in-url{flex:1 1 auto;}
+  .lk-del{flex:0 0 auto;border:1px solid var(--border);background:var(--surface);color:var(--text-soft);border-radius:8px;width:34px;height:34px;cursor:pointer;}
+  .lk-del:hover{color:var(--danger);border-color:var(--danger);}
+  .lk-add{font-size:14px;padding:6px 12px;}
+  .lib-group{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-soft);margin:20px 0 8px;}
+  .lib-card{position:relative;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .lib-open{flex:1 1 280px;display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text);min-width:0;}
+  .lib-open:hover .lib-title{color:var(--accent);}
+  .lib-ico{font-size:26px;line-height:1;}
+  .lib-txt{display:flex;flex-direction:column;min-width:0;}
+  .lib-title{font-weight:600;overflow:hidden;text-overflow:ellipsis;}
+  .lib-kind{font-size:13px;color:var(--text-soft);}
+  .lib-notes{flex:1 0 100%;font-size:14.5px;color:var(--text-soft);white-space:pre-wrap;}
+  .tr-wrap h2{margin:0 0 2px;}
+  .tr-list{margin:14px 0 6px;max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:8px;}
+  .tr-row{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:10px;padding:9px 12px;}
+  .tr-info{flex:1;min-width:0;}
+  .tr-title{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tr-meta{font-size:13px;color:var(--text-soft);}
+  .tr-btn{padding:6px 12px !important;font-size:14px !important;}
+    .sb-search-wrap{padding:10px 12.5px 2px;}
+  .sb-search{width:100%;display:flex;align-items:center;gap:8px;text-align:left;background:var(--bg);border:1px solid var(--border);border-radius:9px;color:var(--text-soft);padding:8px 12px;cursor:pointer;font:inherit;font-size:16px;}
+  .sb-search:hover{border-color:var(--accent);color:var(--text);}
+  .sb-search .kbd{margin-left:auto;font-size:12px;border:1px solid var(--border);border-radius:5px;padding:1px 6px;background:var(--surface);color:var(--text-soft);}
+  .sr-overlay{position:fixed;inset:0;background:rgba(16,24,40,.45);z-index:80;display:flex;justify-content:center;align-items:flex-start;padding:9vh 16px 16px;}
+  .sr-box{zoom:var(--content-zoom,1);width:100%;max-width:640px;background:var(--surface);border-radius:14px;box-shadow:0 16px 50px rgba(0,0,0,.28);overflow:hidden;display:flex;flex-direction:column;max-height:70vh;}
+  .sr-input{border:none;border-bottom:1px solid var(--border);padding:16px 18px;font:inherit;font-size:18px;outline:none;background:transparent;color:var(--text);}
+  .sr-list{overflow:auto;flex:1;}
+  .sr-row{padding:10px 18px;cursor:pointer;border-bottom:1px solid var(--border-soft,#eee);}
+  .sr-row.on{background:var(--accent-soft);}
+  .sr-title{font-weight:600;font-size:16px;color:var(--text);}
+  .sr-snip{font-size:13.5px;color:var(--text-soft);margin-top:2px;}
+  .sr-where{font-size:12px;color:var(--accent);margin-top:3px;font-weight:600;}
+  .sr-empty{padding:22px 18px;color:var(--text-soft);font-size:14.5px;}
+  .sr-foot{padding:8px 18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--text-soft);}
+  .sr-box mark{background:#fde68a;color:inherit;border-radius:3px;padding:0 1px;}
+  .lk-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(16px);opacity:0;pointer-events:none;transition:.2s;background:#1b2433;color:#fff;padding:11px 20px;border-radius:9px;z-index:400;font-size:16px;box-shadow:0 8px 24px rgba(0,0,0,.25);}
+  .lk-toast.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+  .lk-toast-undo{margin-left:10px;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit;font-weight:600;}
+  .lk-toast-undo:hover{background:rgba(255,255,255,.3);}
+  .lk-slot{margin-top:4px;}
+  .tr-sub{font-size:14px;color:var(--text-soft);margin-top:2px;}
+  .lib-intro{font-size:14.5px;color:var(--text-soft);margin:4px 0 6px;}
+  .sr-overlay{z-index:300;}
+  .sb-search-wrap .sb-search{background:var(--bg);}
 </style>
 </head>
 <body>
@@ -505,17 +561,20 @@
       </div>
       <div class="brand-sub" id="subline">Carregando…</div>
     </div>
+    <div class="sb-search-wrap"><button type="button" class="sb-search" id="searchBtn">🔎 <span>Buscar em tudo</span> <span class="kbd">Ctrl K</span></button></div>
     <nav class="sidebar-nav">
       <button class="tab cal-tab" id="dashTabBtn"><span>📊</span><span>Visão Geral</span></button>
       <button class="tab cal-tab" id="calTabBtn"><span>📅</span><span>Calendário</span></button>
       <button class="tab cal-tab" id="postsTabBtn"><span>📱</span><span>Calendário de Posts</span></button>
       <button class="tab cal-tab" id="teseTabBtn"><span>📚</span><span>Teses</span></button>
       <button class="tab cal-tab" id="mapaTabBtn"><span>🧠</span><span>Mapa mental</span></button>
+      <button class="tab cal-tab" id="bibTabBtn"><span>🔗</span><span>Biblioteca de links</span></button>
       <div class="sidebar-section-label">Categorias</div>
       <nav class="tabs side-cats" id="tabs"></nav>
     </nav>
     <div class="sidebar-footer">
       <button class="btn" id="settingsBtn" title="Configurar categorias, status e campos">⚙ Configurações</button>
+      <button class="btn" id="trashBtn" title="Itens excluídos (ficam 30 dias)">🗑 Lixeira</button>
     </div>
   </aside>
 
@@ -533,6 +592,7 @@
 
     <main>
   <div class="alert-banner" id="alertBanner"></div>
+  <div class="lk-toast" id="lkToast"></div>
 
   <div id="categoriaView">
     <div id="groupSubtabsBar"></div>
@@ -616,6 +676,7 @@
     <div id="dashGrid" class="dash-grid"></div>
   </div>
   <div id="mapaView" class="cal-wrap"></div>
+  <div id="bibliotecaView" class="cal-wrap"></div>
     </main>
   </div>
 </div>
@@ -651,6 +712,7 @@
       <label for="fStatus">Status</label>
       <select id="fStatus"></select>
     </div>
+    <div class="lk-slot" id="lkSlotItem"></div>
     <div class="modal-actions">
       <button class="btn danger" id="deleteBtn" style="display:none;">Excluir</button>
       <div class="right">
@@ -705,6 +767,7 @@
       <label for="pObs">Observações</label>
       <textarea id="pObs" placeholder="Detalhes, processo, vara, etc."></textarea>
     </div>
+    <div class="lk-slot" id="lkSlotPrazo"></div>
     <div class="modal-actions">
       <button class="btn danger" id="pDeleteBtn" style="display:none;">Excluir</button>
       <div class="right">
@@ -741,6 +804,7 @@
       <label for="postTexto">O que vai postar</label>
       <textarea id="postTexto" placeholder="Roteiro, legenda, ideia, link de referência..." style="min-height:160px;"></textarea>
     </div>
+    <div class="lk-slot" id="lkSlotPost"></div>
     <div class="modal-actions">
       <button class="btn danger" id="postDeleteBtn" style="display:none;">Excluir</button>
       <div class="right">
@@ -763,6 +827,7 @@
       <label for="tTexto">Texto / Fundamentação</label>
       <textarea id="tTexto" placeholder="Cole ou escreva o argumento, fundamentação legal, jurisprudência, etc." style="min-height:220px;"></textarea>
     </div>
+    <div class="lk-slot" id="lkSlotTese"></div>
     <div class="modal-actions">
       <button class="btn danger" id="tDeleteBtn" style="display:none;">Excluir</button>
       <div class="right">
@@ -1057,7 +1122,8 @@ window.MindMapApp = (function(){
       bindCanvas();
     }
     function btn(label, title, fn, cls){
-      var b = h('button', 'btn small' + (cls ? ' ' + cls : ''), label); b.type = 'button'; if(title) b.title = title;
+      var BTN = opts.btnClasses || { normal: 'btn small', primary: 'btn small primary', danger: 'btn small danger' };
+      var b = h('button', cls === 'primary' ? BTN.primary : cls === 'danger' ? BTN.danger : BTN.normal, label); b.type = 'button'; if(title) b.title = title;
       b.addEventListener('mousedown', function(e){ e.preventDefault(); }); // não rouba foco do mapa
       b.addEventListener('click', fn); return b;
     }
@@ -1076,6 +1142,7 @@ window.MindMapApp = (function(){
       rowB.appendChild(btn('+ Filho', 'Novo ramo dentro do selecionado (Tab)', function(){ addChild(); }));
       rowB.appendChild(btn('+ Irmão', 'Novo ramo ao lado do selecionado (Enter)', function(){ addSibling(); }));
       rowB.appendChild(btn('🗑 Ramo', 'Excluir o ramo selecionado (Delete)', function(){ delSel(); }));
+      rowB.appendChild(btn('🔗 Link', 'Anexar um link (Docs, Drive, Word…) ao ramo selecionado', setLink));
       rowB.appendChild(h('span', 'mm-sep'));
       var colors = h('span', 'mm-colors'); colors.title = 'Cor do ramo selecionado';
       PALETTE.forEach(function(c){
@@ -1130,6 +1197,12 @@ window.MindMapApp = (function(){
         var tcol = d.depth <= 1 ? '#ffffff' : '#1b2433';
         var t = el('text', { x: d.x + d.w / 2, y: top, 'text-anchor': 'middle', fill: tcol, 'font-size': d.size, 'font-weight': d.weight, 'font-family': FONT, 'pointer-events': 'none' }, g);
         d.lines.forEach(function(line, i){ var ts = el('tspan', { x: d.x + d.w / 2, dy: i === 0 ? (d.hh - d.lines.length * d.lh) / 2 + d.lh * 0.78 : d.lh }, t); ts.textContent = line || ' '; });
+        if(n.link){
+          var lg = el('g', { 'class': 'mm-link', 'data-act': 'link', 'data-id': id }, g); lg.style.cursor = 'pointer';
+          var lt = el('title', null, lg); lt.textContent = n.link;
+          el('circle', { cx: d.x + d.w - 4, cy: top - 2, r: 10, fill: '#fff', stroke: col, 'stroke-width': 2 }, lg);
+          var lx = el('text', { x: d.x + d.w - 4, y: top + 2, 'text-anchor': 'middle', 'font-size': 11, 'font-family': FONT, 'pointer-events': 'none' }, lg); lx.textContent = '🔗';
+        }
         // botão de recolher/expandir
         if(n.children.length){
           var tx = d.dir < 0 ? d.x - 11 : d.x + d.w + 11; if(d.depth === 0) tx = d.x + d.w + 11;
@@ -1275,8 +1348,25 @@ window.MindMapApp = (function(){
     }
     function deleteMap(){
       var m = curMap(); if(!m) return;
-      if(!confirm('Excluir o mapa "' + m.titulo + '" inteiro? Essa ação não pode ser desfeita.')) return;
-      var list = maps(), i = list.indexOf(m); list.splice(i, 1); opts.save(); activeId = null; selId = null; undo = []; redo = []; fitPending = true; render();
+      if(!confirm(opts.onTrash ? 'Excluir o mapa "' + m.titulo + '" inteiro? Ele vai para a Lixeira e pode ser restaurado.' : 'Excluir o mapa "' + m.titulo + '" inteiro? Essa ação não pode ser desfeita.')) return;
+      var list = maps(), i = list.indexOf(m); list.splice(i, 1); if(opts.onTrash) opts.onTrash(m); opts.save(); activeId = null; selId = null; undo = []; redo = []; fitPending = true; render();
+    }
+    function normLink(u){ u = (u || '').trim(); if(!u) return ''; if(!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u; return u; }
+    function setLink(){
+      var m = curMap(); if(!m) return; var info = sel(); if(!info) return;
+      var cur = info.node.link || '';
+      var v = prompt('Cole o link deste ramo (Google Docs, pasta do Drive, Word, site…).\nDeixe vazio para remover o link:', cur); if(v === null) return;
+      v = normLink(v); pushUndo(m); if(v) info.node.link = v; else delete info.node.link; commit(m); draw();
+    }
+    function openAt(mapId, nodeId){
+      var m = maps().filter(function(x){ return x.id === mapId; })[0]; if(!m) return;
+      activeId = m.id; undo = []; redo = []; selId = m.root.id; fitPending = true;
+      if(nodeId){
+        var idx = index(m), info = idx[nodeId];
+        if(info){ var p = info.parent; while(p){ p.collapsed = false; var pi = idx[p.id]; p = pi ? pi.parent : null; } selId = nodeId; }
+      }
+      render();
+      if(nodeId){ setTimeout(function(){ if(layoutCache && layoutCache.L[selId]) reveal(selId); }, 120); }
     }
     function moveNode(m, id, targetId, zone, px){
       var idx = index(m), a = idx[id], t = idx[targetId]; if(!a || !t || a.depth === 0) return false;
@@ -1311,6 +1401,7 @@ window.MindMapApp = (function(){
         var tgt = ev.target.closest ? ev.target.closest('[data-act],.mm-node') : null;
         var act = tgt && tgt.getAttribute('data-act'), nodeG = ev.target.closest ? ev.target.closest('.mm-node') : null;
         if(act === 'tog'){ ev.preventDefault(); toggle(tgt.getAttribute('data-id')); return; }
+        if(act === 'link'){ ev.preventDefault(); var li = index(curMap())[tgt.getAttribute('data-id')]; if(li && li.node.link) window.open(li.node.link, '_blank', 'noopener'); return; }
         if(act === 'add'){ ev.preventDefault(); selId = tgt.getAttribute('data-id'); addChild(); return; }
         if(nodeG){
           var id = nodeG.getAttribute('data-id');
@@ -1405,7 +1496,7 @@ window.MindMapApp = (function(){
       draw();
       if(fitPending){ requestAnimationFrame(function(){ if(ui.wrap.clientWidth){ fit(); fitPending = false; } }); }
     }
-    return { render: render, fit: fit };
+    return { render: render, fit: fit, open: openAt };
   }
   return { create: create };
 })();
@@ -1594,6 +1685,8 @@ window.MindMapApp = (function(){
     }
     if (!s.teses || !Array.isArray(s.teses)) s.teses = [];
     if (!s.mapas || !Array.isArray(s.mapas)) s.mapas = [];
+    if (!Array.isArray(s.biblioteca)) s.biblioteca = [];
+    if (!Array.isArray(s.trash)) s.trash = [];
     if (!s.posts || !Array.isArray(s.posts)) s.posts = [];
     if (!s.postTypes || !Array.isArray(s.postTypes) || s.postTypes.length === 0) {
       s.postTypes = JSON.parse(JSON.stringify(DEFAULT_POST_TYPES));
@@ -2076,6 +2169,8 @@ window.MindMapApp = (function(){
     document.getElementById("tesesView").classList.toggle("active", view === "teses");
     document.getElementById("dashboardView").classList.toggle("active", view === "dashboard");
     document.getElementById("mapaView").classList.toggle("active", view === "mapa");
+    document.getElementById("bibliotecaView").classList.toggle("active", view === "biblioteca");
+    document.getElementById("bibTabBtn").classList.toggle("active", view === "biblioteca");
     document.getElementById("calTabBtn").classList.toggle("active", view === "calendario");
     document.getElementById("postsTabBtn").classList.toggle("active", view === "postsCalendario");
     document.getElementById("teseTabBtn").classList.toggle("active", view === "teses");
@@ -2087,6 +2182,7 @@ window.MindMapApp = (function(){
     if (view === "teses") renderTeses();
     if (view === "dashboard") renderDashboard();
     if (view === "mapa") mapaApp.render();
+    if (view === "biblioteca") renderBiblioteca();
     closeSidebarMobile();
   }
 
@@ -2276,6 +2372,7 @@ window.MindMapApp = (function(){
         </div>
         <div class="subject">${escapeHtml(item.assunto || "")}</div>
         ${extras ? `<div class="extras">${extras}</div>` : ""}
+        ${lkChipsHtml(item)}
         <div class="actions">
           <button class="icon-btn" title="Marcar feito/pendente" data-action="toggle" data-id="${item.id}">✓</button>
           <button class="icon-btn" title="Editar" data-action="edit" data-id="${item.id}">✎</button>
@@ -2300,9 +2397,9 @@ window.MindMapApp = (function(){
         b.onclick = () => {
           if (action === "edit") openModal(id);
           else if (action === "delete") {
-            if (confirm("Excluir este item?")) {
-              state.items = state.items.filter(i => i.id !== id);
-              saveState(); renderAll();
+            if (confirm("Excluir este item? Ele vai para a Lixeira e pode ser restaurado por 30 dias.")) {
+              const tid = trashDel("items", id);
+              renderAll(); undoToast("Item excluído.", tid);
             }
           } else if (action === "toggle") {
             const it = state.items.find(i => i.id === id);
@@ -2372,10 +2469,10 @@ window.MindMapApp = (function(){
       };
       delBtn.onclick = () => {
         if (!confirm(`Remover "${item.nome || "este gasto"}"?`)) return;
-        state.items = state.items.filter(i => i.id !== item.id);
-        saveState();
+        const tid = trashDel("items", item.id);
         renderPlanilhaList(cat);
         renderTabs();
+        undoToast("Gasto removido.", tid);
       };
       tbody.appendChild(tr);
     });
@@ -2429,20 +2526,22 @@ window.MindMapApp = (function(){
     if (activeView === "teses") renderTeses();
     if (activeView === "dashboard") renderDashboard();
     if (activeView === "mapa") mapaApp.render();
+    if (activeView === "biblioteca") renderBiblioteca();
+    trashPurge(); updateTrashBtn();
   }
 
   // ========== CALENDÁRIO ==========
   function getDayEntries(dateStr) {
     const prazoEntries = (state.prazos || []).filter(p => p.data === dateStr).map(p => {
       const tdef = getPrazoTypeDef(p.tipo);
-      return { hora: p.hora, titulo: p.titulo, bg: tdef.bg, color: tdef.color, onClick: () => openPrazoModal(p.id) };
+      return { hora: p.hora, titulo: (lkList(p).length ? "🔗 " : "") + p.titulo, bg: tdef.bg, color: tdef.color, onClick: () => openPrazoModal(p.id) };
     });
     const catEntries = [];
     state.categorias.filter(c => c.noCalendario).forEach(c => {
       state.items.filter(it => it.categoria === c.id && it.data === dateStr).forEach(it => {
         catEntries.push({
           hora: it.hora,
-          titulo: `${c.icon || "📌"} ${it.nome || "(sem nome)"}`,
+          titulo: `${c.icon || "📌"} ${lkList(it).length ? "🔗 " : ""}${it.nome || "(sem nome)"}`,
           bg: "#f3f2ee", color: "#4b4b4b",
           onClick: () => openModal(it.id)
         });
@@ -2652,7 +2751,7 @@ window.MindMapApp = (function(){
           const chip = document.createElement("div");
           chip.className = "cal-chip";
           chip.style.background = tdef.bg; chip.style.color = tdef.color;
-          chip.textContent = (p.hora ? p.hora + " " : "") + p.titulo;
+          chip.textContent = (p.hora ? p.hora + " " : "") + (lkList(p).length ? "🔗 " : "") + p.titulo;
           chip.title = p.titulo;
           chip.onclick = (e) => { e.stopPropagation(); openPostModal(p.id); };
           div.appendChild(chip);
@@ -2700,6 +2799,7 @@ window.MindMapApp = (function(){
       document.getElementById("postTexto").value = "";
       document.getElementById("postDeleteBtn").style.display = "none";
     }
+    lkMount("lkSlotPost", lkLinksOf("posts", id));
     document.getElementById("postModalBg").classList.add("open");
     setTimeout(() => document.getElementById("postTitulo").focus(), 50);
   }
@@ -2720,8 +2820,11 @@ window.MindMapApp = (function(){
     if (editingPostId) {
       const p = state.posts.find(x => x.id === editingPostId);
       Object.assign(p, data);
+      lkApply(p, "lkSlotPost");
     } else {
-      state.posts.push({ id: uid(), criado: Date.now(), ...data });
+      const nu = { id: uid(), criado: Date.now(), ...data };
+      lkApply(nu, "lkSlotPost");
+      state.posts.push(nu);
     }
     saveState();
     closePostModal();
@@ -2890,6 +2993,7 @@ window.MindMapApp = (function(){
       document.getElementById("deleteBtn").style.display = "none";
     }
     renderCustomFieldsInModal(item);
+    lkMount("lkSlotItem", item && item.links);
     document.getElementById("modalBg").classList.add("open");
     setTimeout(() => document.getElementById("fNome").focus(), 50);
   }
@@ -2917,13 +3021,16 @@ window.MindMapApp = (function(){
       const oldCat = it.categoria;
       Object.assign(it, data);
       it.extra = extra;
+      lkApply(it, "lkSlotItem");
       if (oldCat !== data.categoria) {
         const maxOrd = state.items.filter(i => i.categoria === data.categoria && i.id !== it.id).reduce((m, x) => Math.max(m, x.ordem ?? -1), -1);
         it.ordem = maxOrd + 1;
       }
     } else {
       const maxOrd = state.items.filter(i => i.categoria === data.categoria).reduce((m, x) => Math.max(m, x.ordem ?? -1), -1);
-      state.items.push({ id: uid(), criado: Date.now(), ordem: maxOrd + 1, extra, ...data });
+      const nu = { id: uid(), criado: Date.now(), ordem: maxOrd + 1, extra, ...data };
+      lkApply(nu, "lkSlotItem");
+      state.items.push(nu);
     }
     saveState();
     closeModal();
@@ -2969,6 +3076,7 @@ window.MindMapApp = (function(){
     }
     document.getElementById("pBusdayStart").value = presetDate || todayStr();
     document.getElementById("pBusdayCount").value = 15;
+    lkMount("lkSlotPrazo", lkLinksOf("prazos", id));
     document.getElementById("prazoModalBg").classList.add("open");
     setTimeout(() => document.getElementById("pTitulo").focus(), 50);
   }
@@ -2989,8 +3097,11 @@ window.MindMapApp = (function(){
     if (editingPrazoId) {
       const p = state.prazos.find(x => x.id === editingPrazoId);
       Object.assign(p, data);
+      lkApply(p, "lkSlotPrazo");
     } else {
-      state.prazos.push({ id: uid(), criado: Date.now(), ...data });
+      const nu = { id: uid(), criado: Date.now(), ...data };
+      lkApply(nu, "lkSlotPrazo");
+      state.prazos.push(nu);
     }
     saveState();
     closePrazoModal();
@@ -3029,6 +3140,7 @@ window.MindMapApp = (function(){
         </div>
         <div class="tese-texto clamped">${escapeHtml(t.texto || "")}</div>
         <button type="button" class="tese-toggle" data-action="toggle-clamp">Ver mais</button>
+        ${lkChipsHtml(t)}
       `;
       list.appendChild(card);
       const textoEl = card.querySelector(".tese-texto");
@@ -3040,9 +3152,9 @@ window.MindMapApp = (function(){
       card.querySelector('[data-action="edit"]').onclick = () => openTeseModal(t.id);
       card.querySelector('[data-action="delete"]').onclick = () => {
         if (!confirm(`Excluir a tese "${t.titulo || "(sem título)"}"?`)) return;
-        state.teses = state.teses.filter(x => x.id !== t.id);
-        saveState();
+        const tid = trashDel("teses", t.id);
         renderTeses();
+        undoToast("Tese excluída.", tid);
       };
     });
   }
@@ -3061,6 +3173,7 @@ window.MindMapApp = (function(){
       document.getElementById("tTexto").value = "";
       document.getElementById("tDeleteBtn").style.display = "none";
     }
+    lkMount("lkSlotTese", lkLinksOf("teses", id));
     document.getElementById("teseModalBg").classList.add("open");
     setTimeout(() => document.getElementById("tTitulo").focus(), 50);
   }
@@ -3077,8 +3190,11 @@ window.MindMapApp = (function(){
     if (editingTeseId) {
       const t = state.teses.find(x => x.id === editingTeseId);
       Object.assign(t, data);
+      lkApply(t, "lkSlotTese");
     } else {
-      state.teses.push({ id: uid(), criado: Date.now(), ...data });
+      const nu = { id: uid(), criado: Date.now(), ...data };
+      lkApply(nu, "lkSlotTese");
+      state.teses.push(nu);
     }
     saveState();
     closeTeseModal();
@@ -3570,6 +3686,402 @@ window.MindMapApp = (function(){
     document.getElementById("newFieldLabel").focus();
   }
 
+  // =========================================================
+  // Links nos itens · Biblioteca de links · Lixeira · Busca (Ctrl+K)
+  // =========================================================
+  function lkMk(tag, cls, txt) { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function lkNorm(u) { u = String(u || "").trim(); if (!u) return ""; if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = "https://" + u; return u; }
+  function lkKind(url) {
+    const l = String(url || "").toLowerCase(); let host = "";
+    try { host = new URL(url).hostname.replace(/^www\./, ""); } catch (e) {}
+    if (/docs\.google\.com\/document/.test(l)) return { ico: "📄", label: "Google Docs" };
+    if (/docs\.google\.com\/spreadsheets/.test(l)) return { ico: "📊", label: "Google Planilhas" };
+    if (/docs\.google\.com\/presentation/.test(l)) return { ico: "📽️", label: "Google Slides" };
+    if (/docs\.google\.com\/forms|forms\.gle/.test(l)) return { ico: "📝", label: "Google Forms" };
+    if (/drive\.google\.com\/.*folders/.test(l)) return { ico: "📁", label: "Pasta do Drive" };
+    if (/drive\.google\.com|docs\.google\.com/.test(l)) return { ico: "📎", label: "Arquivo no Drive" };
+    if (/1drv\.ms|onedrive\.live\.com|sharepoint\.com/.test(l)) return { ico: "☁️", label: /:w:|\.docx?(\?|#|$)/.test(l) ? "Word (OneDrive)" : "OneDrive" };
+    if (/dropbox\.com/.test(l)) return { ico: "📦", label: "Dropbox" };
+    if (/notion\.(so|site)/.test(l)) return { ico: "🗒️", label: "Notion" };
+    if (/youtube\.com|youtu\.be/.test(l)) return { ico: "▶️", label: "YouTube" };
+    if (/instagram\.com/.test(l)) return { ico: "📷", label: "Instagram" };
+    if (/tiktok\.com/.test(l)) return { ico: "🎵", label: "TikTok" };
+    if (/canva\.com/.test(l)) return { ico: "🎨", label: "Canva" };
+    if (/\.pdf(\?|#|$)/.test(l)) return { ico: "📕", label: "PDF" };
+    if (/\.docx?(\?|#|$)/.test(l)) return { ico: "📝", label: "Word" };
+    if (/\.xlsx?(\?|#|$)/.test(l)) return { ico: "📊", label: "Excel" };
+    if (/\.pptx?(\?|#|$)/.test(l)) return { ico: "📽️", label: "PowerPoint" };
+    return { ico: "🔗", label: host || "Link" };
+  }
+  function lkList(item) { return (item && Array.isArray(item.links) ? item.links : []).filter(l => l && l.url); }
+  function lkChipsHtml(item) {
+    const ls = lkList(item); if (!ls.length) return "";
+    return `<div class="lk-row">` + ls.map(l => {
+      const k = lkKind(l.url);
+      return `<a class="lk-chip" href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(l.url)}" onclick="event.stopPropagation()"><span class="lk-ico">${k.ico}</span><span class="lk-name">${escapeHtml(l.nome || k.label)}</span><span class="lk-out">↗</span></a>`;
+    }).join("") + `</div>`;
+  }
+  function lkEditor(initial) {
+    const wrap = lkMk("div", "field lk-editor");
+    wrap.appendChild(lkMk("label", null, "🔗 Links e documentos"));
+    wrap.appendChild(lkMk("div", "lk-help", "Cole o link do Google Docs, pasta do Drive, Word no OneDrive, PDF, vídeo… (o arquivo precisa estar na nuvem)."));
+    const rows = lkMk("div", "lk-rows"); wrap.appendChild(rows);
+    function addRow(l) {
+      l = l || {};
+      const r = lkMk("div", "lk-edit-row");
+      const n = lkMk("input", "lk-in-name"); n.type = "text"; n.placeholder = "Nome"; n.value = l.nome || "";
+      const u = lkMk("input", "lk-in-url"); u.type = "text"; u.placeholder = "Cole o link aqui"; u.value = l.url || "";
+      const x = lkMk("button", "lk-del", "✕"); x.type = "button"; x.title = "Remover link";
+      x.onclick = () => rows.removeChild(r);
+      r.appendChild(n); r.appendChild(u); r.appendChild(x); rows.appendChild(r);
+      return u;
+    }
+    lkList({ links: initial }).forEach(addRow);
+    const add = lkMk("button", "btn small lk-add", "+ Adicionar link"); add.type = "button";
+    add.onclick = () => addRow().focus();
+    wrap.appendChild(add);
+    return { node: wrap, get() {
+      const out = [];
+      [].slice.call(rows.children).forEach(r => {
+        const url = lkNorm(r.querySelector(".lk-in-url").value);
+        if (url) out.push({ nome: r.querySelector(".lk-in-name").value.trim(), url });
+      });
+      return out;
+    } };
+  }
+  const lkEds = {};
+  function lkMount(slotId, links) {
+    const slot = document.getElementById(slotId); if (!slot) return;
+    slot.innerHTML = ""; const ed = lkEditor(links); slot.appendChild(ed.node); lkEds[slotId] = ed;
+  }
+  function lkGet(slotId) { const ed = lkEds[slotId]; return ed ? ed.get() : []; }
+  function lkApply(obj, slotId) { const ls = lkGet(slotId); if (ls.length) obj.links = ls; else delete obj.links; }
+  function lkLinksOf(coll, id) { const it = id ? (state[coll] || []).find(x => x.id === id) : null; return it ? it.links : null; }
+
+  // ---------- Lixeira ----------
+  const TRASH_DAYS = 30;
+  function trashList() { if (!Array.isArray(state.trash)) state.trash = []; return state.trash; }
+  function trashPurge() {
+    const lim = Date.now() - TRASH_DAYS * 86400000, t = trashList();
+    const keep = t.filter(e => (e.deletedAt || 0) >= lim);
+    if (keep.length !== t.length) state.trash = keep;
+  }
+  function trashPush(entry) {
+    entry.id = uid(); entry.deletedAt = Date.now();
+    const t = trashList(); t.unshift(entry); if (t.length > 300) t.length = 300;
+    return entry.id;
+  }
+  const COLL_NAMES = { items: "Itens", prazos: "Calendário · Prazos", posts: "Calendário de Posts", teses: "Teses", biblioteca: "Biblioteca de links" };
+  function itemTitle(coll, it) {
+    return it.nome || it.titulo || (it.texto ? String(it.texto).slice(0, 70) : "") || "(sem título)";
+  }
+  function whereOf(coll, it) {
+    if (coll === "items") { const c = state.categorias.find(x => x.id === it.categoria); return c ? ((c.icon || "") + " " + c.label).trim() : "Itens"; }
+    return COLL_NAMES[coll] || coll;
+  }
+  function trashDel(coll, id) {
+    const it = (state[coll] || []).find(x => x.id === id); if (!it) return null;
+    const tid = trashPush({ kind: "item", coll, item: it, label: itemTitle(coll, it), where: whereOf(coll, it) });
+    state[coll] = state[coll].filter(x => x.id !== id);
+    saveState(); updateTrashBtn();
+    return tid;
+  }
+  function trashRestore(id) {
+    const t = trashList(), i = t.findIndex(e => e.id === id); if (i < 0) return false;
+    const e = t[i];
+    if (e.kind === "item") {
+      if (!Array.isArray(state[e.coll])) state[e.coll] = [];
+      if (!state[e.coll].some(x => x.id === e.item.id)) state[e.coll].push(e.item);
+    } else if (e.kind === "mapa") {
+      if (!state.mapas.some(x => x.id === e.map.id)) state.mapas.push(e.map);
+    }
+    t.splice(i, 1); saveState(); return true;
+  }
+  function refreshAfterTrash() {
+    renderAll();
+    if (activeView === "calendario") renderCalendar();
+    updateTrashBtn();
+  }
+  function agoText(ts) {
+    const m = Math.round((Date.now() - ts) / 60000);
+    if (m < 1) return "agora há pouco";
+    if (m < 60) return "há " + m + " min";
+    const h = Math.round(m / 60); if (h < 24) return "há " + h + " h";
+    const d = Math.round(h / 24); return "há " + d + (d === 1 ? " dia" : " dias");
+  }
+  function updateTrashBtn() {
+    const b = document.getElementById("trashBtn"); if (!b) return;
+    const n = trashList().length;
+    b.textContent = "🗑 Lixeira" + (n ? " (" + n + ")" : "");
+  }
+  function lkToast(msg, undoFn) {
+    const t = document.getElementById("lkToast"); if (!t) return;
+    t.textContent = msg + " ";
+    if (undoFn) {
+      const b = lkMk("button", "lk-toast-undo", "Desfazer");
+      b.onclick = () => { t.classList.remove("show"); undoFn(); };
+      t.appendChild(b);
+    }
+    t.classList.add("show");
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove("show"), undoFn ? 7000 : 2600);
+  }
+  function undoToast(msg, tid) {
+    if (!tid) return;
+    lkToast(msg, () => { if (trashRestore(tid)) { refreshAfterTrash(); lkToast("Restaurado."); } });
+  }
+  function openLkModal(build) {
+    const bg = lkMk("div", "modal-bg open"); const box = lkMk("div", "modal"); bg.appendChild(box);
+    const close = () => bg.remove();
+    bg.addEventListener("mousedown", e => { if (e.target === bg) close(); });
+    build(box, close);
+    document.body.appendChild(bg);
+    return close;
+  }
+  function openTrashModal() {
+    trashPurge();
+    openLkModal((box, close) => {
+      const wrap = lkMk("div", "tr-wrap");
+      wrap.appendChild(lkMk("h2", null, "🗑 Lixeira"));
+      wrap.appendChild(lkMk("div", "tr-sub", "O que você exclui fica aqui por " + TRASH_DAYS + " dias e pode ser restaurado."));
+      const list = lkMk("div", "tr-list");
+      const paint = () => {
+        list.innerHTML = "";
+        const t = trashList();
+        if (!t.length) { list.appendChild(lkMk("div", "sr-empty", "A lixeira está vazia.")); return; }
+        t.forEach(e => {
+          const row = lkMk("div", "tr-row"), info = lkMk("div", "tr-info");
+          info.appendChild(lkMk("div", "tr-title", (e.kind === "mapa" ? "🗺️ " : "📄 ") + (e.label || "(sem título)")));
+          info.appendChild(lkMk("div", "tr-meta", (e.kind === "mapa" ? "Mapa mental" : (e.where || "")) + " · excluído " + agoText(e.deletedAt)));
+          const rest = lkMk("button", "btn primary small", "Restaurar");
+          rest.onclick = () => { if (trashRestore(e.id)) { lkToast("Restaurado."); paint(); refreshAfterTrash(); } };
+          const del = lkMk("button", "btn small", "Apagar"); del.title = "Apagar de vez";
+          del.onclick = () => {
+            if (!confirm('Apagar "' + (e.label || "este item") + '" de vez? Não dá para desfazer.')) return;
+            state.trash = trashList().filter(x => x.id !== e.id); saveState(); paint(); updateTrashBtn();
+          };
+          row.appendChild(info); row.appendChild(rest); row.appendChild(del); list.appendChild(row);
+        });
+      };
+      paint(); wrap.appendChild(list);
+      const actions = lkMk("div", "modal-actions");
+      const empty = lkMk("button", "btn danger", "Esvaziar lixeira");
+      empty.onclick = () => {
+        if (!trashList().length) return;
+        if (!confirm("Apagar tudo que está na lixeira de vez? Não dá para desfazer.")) return;
+        state.trash = []; saveState(); paint(); updateTrashBtn();
+      };
+      const fechar = lkMk("button", "btn", "Fechar"); fechar.onclick = close;
+      actions.appendChild(empty); actions.appendChild(fechar);
+      wrap.appendChild(actions); box.appendChild(wrap);
+    });
+  }
+
+  // ---------- Biblioteca de links ----------
+  let bibSearchTerm = "";
+  function openBibModal(id) {
+    const it = id ? state.biblioteca.find(x => x.id === id) : null;
+    openLkModal((box, close) => {
+      box.appendChild(lkMk("h2", null, it ? "Editar link" : "Novo link"));
+      const mkField = (label, tag, val, ph) => {
+        const f = lkMk("div", "field"); f.appendChild(lkMk("label", null, label));
+        const inp = lkMk(tag); if (tag === "input") inp.type = "text"; inp.value = val || ""; if (ph) inp.placeholder = ph;
+        f.appendChild(inp); box.appendChild(f); return inp;
+      };
+      const fNome = mkField("Nome *", "input", it && it.titulo, "Ex: Pasta de modelos de petição");
+      const fUrl = mkField("Link (Docs, pasta do Drive, Word, site…) *", "input", it && it.url, "Cole o link aqui");
+      const fCat = mkField("Pasta / categoria", "input", it && it.categoria, "Ex: Modelos de petição");
+      const fObs = mkField("Observações", "textarea", it && it.obs);
+      const actions = lkMk("div", "modal-actions");
+      const del = lkMk("button", "btn danger", "Excluir"); if (!it) del.style.visibility = "hidden";
+      del.onclick = () => {
+        if (!confirm("Excluir este link?")) return;
+        const tid = trashDel("biblioteca", it.id); close(); renderBiblioteca(); undoToast("Link excluído.", tid);
+      };
+      const right = lkMk("div", "right");
+      const cancel = lkMk("button", "btn", "Cancelar"); cancel.onclick = close;
+      const save = lkMk("button", "btn primary", "Salvar");
+      save.onclick = () => {
+        const data = { titulo: fNome.value.trim(), url: lkNorm(fUrl.value), categoria: fCat.value.trim(), obs: fObs.value.trim() };
+        if (!data.titulo || !data.url) { alert("Informe o nome e o link."); return; }
+        if (it) Object.assign(it, data); else state.biblioteca.push({ id: uid(), criado: Date.now(), ...data });
+        saveState(); close(); renderBiblioteca();
+      };
+      right.appendChild(cancel); right.appendChild(save); actions.appendChild(del); actions.appendChild(right); box.appendChild(actions);
+      setTimeout(() => fNome.focus(), 40);
+    });
+  }
+  function renderBiblioteca() {
+    const root = document.getElementById("bibliotecaView"); if (!root) return;
+    root.innerHTML = "";
+    const tb = lkMk("div", "toolbar");
+    const add = lkMk("button", "btn primary", "+ Novo link"); add.onclick = () => openBibModal(null);
+    const fr = lkMk("div", "filter-row"); const inp = lkMk("input"); inp.type = "text"; inp.placeholder = "Buscar na biblioteca…"; inp.value = bibSearchTerm;
+    inp.oninput = () => { const pos = inp.selectionStart; bibSearchTerm = inp.value; renderBiblioteca(); const n = root.querySelector("input"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} } };
+    fr.appendChild(inp); tb.appendChild(add); tb.appendChild(fr); root.appendChild(tb);
+    root.appendChild(lkMk("div", "lib-intro", "Pastas e documentos que você usa sempre: Drive, Docs, Word, modelos, materiais. O arquivo precisa estar na nuvem (Google Drive, OneDrive…)."));
+    const q = fold(bibSearchTerm).trim();
+    const items = state.biblioteca.filter(it => !q || fold([it.titulo, it.url, it.categoria, it.obs].join(" ")).indexOf(q) > -1);
+    if (!items.length) {
+      const e = lkMk("div", "empty");
+      e.innerHTML = state.biblioteca.length ? `<p><strong>Nada encontrado</strong></p>` : `<p style="font-size:32px;">🔗</p><p><strong>Nenhum link ainda</strong></p><p>Clique em <em>+ Novo link</em> e cole o endereço de uma pasta, Docs ou arquivo.</p>`;
+      root.appendChild(e); return;
+    }
+    const groups = {}, order = [];
+    items.forEach(it => { const g = (it.categoria || "").trim() || "Sem categoria"; if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(it); });
+    order.sort((a, b) => a === "Sem categoria" ? 1 : b === "Sem categoria" ? -1 : a.localeCompare(b, "pt-BR"));
+    order.forEach(g => {
+      root.appendChild(lkMk("div", "lib-group", g + " · " + groups[g].length));
+      const list = lkMk("div", "list");
+      groups[g].forEach(it => {
+        const k = lkKind(it.url);
+        const card = lkMk("div", "card lib-card");
+        const open = lkMk("a", "lib-open"); open.href = it.url; open.target = "_blank"; open.rel = "noopener noreferrer";
+        open.appendChild(lkMk("span", "lib-ico", k.ico));
+        const txt = lkMk("span", "lib-txt"); txt.appendChild(lkMk("span", "lib-title", it.titulo || it.url)); txt.appendChild(lkMk("span", "lib-kind", k.label + " ↗")); open.appendChild(txt);
+        const edit = lkMk("button", "icon-btn", "✎"); edit.title = "Editar"; edit.onclick = () => openBibModal(it.id);
+        card.appendChild(open); card.appendChild(edit);
+        if (it.obs) card.appendChild(lkMk("div", "lib-notes", it.obs));
+        list.appendChild(card);
+      });
+      root.appendChild(list);
+    });
+  }
+
+  // ---------- Busca global (Ctrl+K) ----------
+  function fold(s) {
+    s = String(s == null ? "" : s); let out = "";
+    for (let i = 0; i < s.length; i++) { const c = s.charAt(i), f = c.normalize ? c.normalize("NFD").charAt(0) : c; out += f.toLowerCase().length === 1 ? f.toLowerCase() : c; }
+    return out;
+  }
+  function searchEntries() {
+    const out = [], d = state;
+    d.items.forEach(it => {
+      const c = d.categorias.find(x => x.id === it.categoria);
+      const f = [it.nome, it.assunto, it.data];
+      Object.keys(it.extra || {}).forEach(k => f.push(it.extra[k]));
+      lkList(it).forEach(l => f.push((l.nome || "") + " " + l.url));
+      out.push({ kind: "item", coll: "items", item: it, title: it.nome || "(sem nome)", where: c ? ((c.icon || "") + " " + c.label).trim() : "Itens", fields: f.filter(Boolean).map(String) });
+    });
+    d.prazos.forEach(p => {
+      const f = [p.titulo, p.obs, p.data, getPrazoTypeDef(p.tipo).label]; lkList(p).forEach(l => f.push((l.nome || "") + " " + l.url));
+      out.push({ kind: "item", coll: "prazos", item: p, title: p.titulo || "(sem título)", where: "Calendário · Prazos", fields: f.filter(Boolean).map(String) });
+    });
+    d.posts.forEach(p => {
+      const f = [p.titulo, p.texto, p.data]; lkList(p).forEach(l => f.push((l.nome || "") + " " + l.url));
+      out.push({ kind: "item", coll: "posts", item: p, title: p.titulo || "(sem título)", where: "Calendário de Posts", fields: f.filter(Boolean).map(String) });
+    });
+    d.teses.forEach(t => {
+      const f = [t.titulo, t.texto]; lkList(t).forEach(l => f.push((l.nome || "") + " " + l.url));
+      out.push({ kind: "item", coll: "teses", item: t, title: t.titulo || "(sem título)", where: "Teses", fields: f.filter(Boolean).map(String) });
+    });
+    d.biblioteca.forEach(b => {
+      out.push({ kind: "item", coll: "biblioteca", item: b, title: b.titulo || b.url, where: "Biblioteca de links", fields: [b.titulo, b.url, b.categoria, b.obs].filter(Boolean).map(String) });
+    });
+    d.mapas.forEach(m => {
+      out.push({ kind: "mapa", mapId: m.id, title: m.titulo || "Mapa", where: "Mapa mental", fields: [m.titulo || ""], link: "" });
+      (function walk(n, depth) {
+        if (depth > 0) out.push({ kind: "mapa", mapId: m.id, nodeId: n.id, title: n.text || "", where: "Mapa mental · " + (m.titulo || ""), fields: [n.text || "", n.link || ""], link: n.link || "" });
+        (n.children || []).forEach(c => walk(c, depth + 1));
+      })(m.root, 0);
+    });
+    return out;
+  }
+  function searchRun(q) {
+    const toks = fold(q).split(/\s+/).filter(Boolean); if (!toks.length) return [];
+    const res = [];
+    searchEntries().forEach(e => {
+      const hay = e.fields.map(fold).join(" \u0001 "), ft = fold(e.title);
+      if (!toks.every(t => hay.indexOf(t) > -1)) return;
+      let score = 0; toks.forEach(t => { const p = ft.indexOf(t); if (p > -1) score += (p === 0 ? 3 : 2); });
+      e.score = score; res.push(e);
+    });
+    res.sort((a, b) => b.score - a.score);
+    return res;
+  }
+  function hl(s, toks) {
+    const span = document.createElement("span"), fs = fold(s), marks = []; let i = 0;
+    toks.forEach(t => { let p = fs.indexOf(t); while (p > -1) { marks.push([p, p + t.length]); p = fs.indexOf(t, p + t.length); } });
+    marks.sort((a, b) => a[0] - b[0]);
+    const merged = []; marks.forEach(m => { const l = merged[merged.length - 1]; if (l && m[0] <= l[1]) l[1] = Math.max(l[1], m[1]); else merged.push(m.slice()); });
+    merged.forEach(m => {
+      if (m[0] > i) span.appendChild(document.createTextNode(s.slice(i, m[0])));
+      const mk = document.createElement("mark"); mk.textContent = s.slice(m[0], m[1]); span.appendChild(mk); i = m[1];
+    });
+    if (i < s.length) span.appendChild(document.createTextNode(s.slice(i)));
+    return span;
+  }
+  function snippetEl(e, toks) {
+    let best = "", pos = -1;
+    for (let i = 0; i < e.fields.length; i++) {
+      const f = e.fields[i]; if (f === e.title) continue;
+      const p = fold(f).indexOf(toks[0]); if (p > -1) { best = f; pos = p; break; }
+    }
+    if (!best) return null;
+    const start = Math.max(0, pos - 30);
+    return hl((start > 0 ? "…" : "") + best.slice(start, start + 110).replace(/\s+/g, " ") + (best.length > start + 110 ? "…" : ""), toks);
+  }
+  function goToEntry(e) {
+    if (e.kind === "mapa") { switchView("mapa"); mapaApp.open(e.mapId, e.nodeId); return; }
+    const it = e.item;
+    if (e.coll === "items") {
+      const cat = state.categorias.find(c => c.id === it.categoria);
+      navigateToCategoria(it.categoria); switchView("categoria"); renderAll();
+      if (!(cat && cat.modo === "planilha")) openModal(it.id);
+    } else if (e.coll === "prazos") { switchView("calendario"); openPrazoModal(it.id); }
+    else if (e.coll === "posts") { switchView("postsCalendario"); openPostModal(it.id); }
+    else if (e.coll === "teses") { switchView("teses"); openTeseModal(it.id); }
+    else if (e.coll === "biblioteca") { switchView("biblioteca"); openBibModal(it.id); }
+  }
+  let srOv = null;
+  function closeSearch() { if (srOv) { srOv.remove(); srOv = null; } }
+  function openSearch() {
+    if (srOv) { srOv.querySelector("input").focus(); return; }
+    const ov = lkMk("div", "sr-overlay"), box = lkMk("div", "sr-box");
+    const inp = lkMk("input", "sr-input"); inp.type = "text"; inp.placeholder = "Buscar em tudo: itens, prazos, posts, teses, links, mapas…";
+    const list = lkMk("div", "sr-list"), foot = lkMk("div", "sr-foot", "↑ ↓ navegar · Enter abrir · Esc fechar");
+    box.appendChild(inp); box.appendChild(list); box.appendChild(foot); ov.appendChild(box);
+    document.body.appendChild(ov); srOv = ov;
+    let results = [], cur = 0;
+    const paint = () => {
+      list.innerHTML = "";
+      const q = inp.value.trim();
+      if (!q) { list.appendChild(lkMk("div", "sr-empty", "Digite para buscar. A busca olha nomes, textos, observações, links e os ramos dos mapas mentais.")); return; }
+      const toks = fold(q).split(/\s+/).filter(Boolean);
+      results = searchRun(q);
+      if (!results.length) { list.appendChild(lkMk("div", "sr-empty", 'Nada encontrado para "' + q + '".')); return; }
+      if (cur >= results.length) cur = 0;
+      results.slice(0, 40).forEach((r, i) => {
+        const row = lkMk("div", "sr-row" + (i === cur ? " on" : ""));
+        const t = lkMk("div", "sr-title"); t.appendChild(hl(r.title, toks));
+        if (r.link || (r.kind === "item" && lkList(r.item).length)) t.appendChild(lkMk("span", "sr-lk", " 🔗"));
+        row.appendChild(t);
+        const sn = snippetEl(r, toks); if (sn) { const sd = lkMk("div", "sr-snip"); sd.appendChild(sn); row.appendChild(sd); }
+        row.appendChild(lkMk("div", "sr-where", r.where));
+        row.addEventListener("mousemove", () => { if (cur !== i) { cur = i; [].slice.call(list.children).forEach((c, j) => c.classList.toggle("on", j === i)); } });
+        row.addEventListener("click", () => { closeSearch(); goToEntry(r); });
+        list.appendChild(row);
+      });
+      if (results.length > 40) list.appendChild(lkMk("div", "sr-empty", "+ " + (results.length - 40) + " resultados — refine a busca."));
+    };
+    inp.addEventListener("input", () => { cur = 0; paint(); });
+    inp.addEventListener("keydown", e => {
+      const n = Math.min(results.length, 40);
+      if (e.key === "ArrowDown") { e.preventDefault(); if (n) { cur = (cur + 1) % n; paint(); const o = list.querySelector(".on"); if (o) o.scrollIntoView({ block: "nearest" }); } }
+      else if (e.key === "ArrowUp") { e.preventDefault(); if (n) { cur = (cur - 1 + n) % n; paint(); const o = list.querySelector(".on"); if (o) o.scrollIntoView({ block: "nearest" }); } }
+      else if (e.key === "Enter") { e.preventDefault(); if (results[cur]) { const r = results[cur]; closeSearch(); goToEntry(r); } }
+      else if (e.key === "Escape") { e.preventDefault(); closeSearch(); }
+    });
+    ov.addEventListener("mousedown", e => { if (e.target === ov) closeSearch(); });
+    paint(); inp.focus();
+  }
+  document.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === "k" || e.key === "K")) { e.preventDefault(); srOv ? closeSearch() : openSearch(); }
+  });
+  document.getElementById("searchBtn").onclick = openSearch;
+  document.getElementById("trashBtn").onclick = openTrashModal;
+  document.getElementById("bibTabBtn").onclick = () => switchView("biblioteca");
+
   // ========== WIRING ==========
   document.getElementById("newBtn").onclick = () => openModal(null);
   document.getElementById("addBtnTop").onclick = () => openModal(null);
@@ -3577,11 +4089,11 @@ window.MindMapApp = (function(){
   document.getElementById("saveBtn").onclick = saveModal;
   document.getElementById("deleteBtn").onclick = () => {
     if (!editingId) return;
-    if (confirm("Excluir este item?")) {
-      state.items = state.items.filter(i => i.id !== editingId);
-      saveState();
+    if (confirm("Excluir este item? Ele vai para a Lixeira e pode ser restaurado por 30 dias.")) {
+      const tid = trashDel("items", editingId);
       closeModal();
       renderAll();
+      undoToast("Item excluído.", tid);
     }
   };
   document.getElementById("modalBg").onclick = (e) => { if (e.target.id === "modalBg") closeModal(); };
@@ -3656,12 +4168,12 @@ window.MindMapApp = (function(){
   document.getElementById("prazoModalBg").onclick = (e) => { if (e.target.id === "prazoModalBg") closePrazoModal(); };
   document.getElementById("pDeleteBtn").onclick = () => {
     if (!editingPrazoId) return;
-    if (confirm("Excluir este prazo?")) {
-      state.prazos = state.prazos.filter(p => p.id !== editingPrazoId);
-      saveState();
+    if (confirm("Excluir este prazo? Ele vai para a Lixeira e pode ser restaurado por 30 dias.")) {
+      const tid = trashDel("prazos", editingPrazoId);
       closePrazoModal();
       renderAlertBanner();
       if (activeView === "calendario") renderCalendar();
+      undoToast("Prazo excluído.", tid);
     }
   };
   document.getElementById("pUseBusday").onchange = (e) => {
@@ -3688,11 +4200,11 @@ window.MindMapApp = (function(){
   document.getElementById("postModalBg").onclick = (e) => { if (e.target.id === "postModalBg") closePostModal(); };
   document.getElementById("postDeleteBtn").onclick = () => {
     if (!editingPostId) return;
-    if (confirm("Excluir este post?")) {
-      state.posts = state.posts.filter(p => p.id !== editingPostId);
-      saveState();
+    if (confirm("Excluir este post? Ele vai para a Lixeira e pode ser restaurado por 30 dias.")) {
+      const tid = trashDel("posts", editingPostId);
       closePostModal();
       if (activeView === "postsCalendario") renderPostsCalendar();
+      undoToast("Post excluído.", tid);
     }
   };
 
@@ -3703,7 +4215,7 @@ window.MindMapApp = (function(){
   document.getElementById("sidebarBackdrop").onclick = () => closeSidebarMobile();
 
   document.getElementById("teseTabBtn").onclick = () => switchView("teses");
-  const mapaApp = MindMapApp.create({ root: document.getElementById("mapaView"), getMaps: () => state.mapas, save: () => saveState() });
+  const mapaApp = MindMapApp.create({ root: document.getElementById("mapaView"), getMaps: () => state.mapas, save: () => saveState(), onTrash: (m) => { trashPush({ kind: "mapa", map: m, label: m.titulo || "Mapa" }); updateTrashBtn(); } });
   document.getElementById("mapaTabBtn").onclick = () => switchView("mapa");
   document.getElementById("teseNewBtn").onclick = () => openTeseModal(null);
   document.getElementById("teseSearch").addEventListener("input", () => renderTeses());
@@ -3712,11 +4224,11 @@ window.MindMapApp = (function(){
   document.getElementById("teseModalBg").onclick = (e) => { if (e.target.id === "teseModalBg") closeTeseModal(); };
   document.getElementById("tDeleteBtn").onclick = () => {
     if (!editingTeseId) return;
-    if (confirm("Excluir esta tese?")) {
-      state.teses = state.teses.filter(t => t.id !== editingTeseId);
-      saveState();
+    if (confirm("Excluir esta tese? Ela vai para a Lixeira e pode ser restaurada por 30 dias.")) {
+      const tid = trashDel("teses", editingTeseId);
       closeTeseModal();
       if (activeView === "teses") renderTeses();
+      undoToast("Tese excluída.", tid);
     }
   };
 
