@@ -545,6 +545,11 @@
   .lib-intro{font-size:14.5px;color:var(--text-soft);margin:4px 0 6px;}
   .sr-overlay{z-index:300;}
   .sb-search-wrap .sb-search{background:var(--bg);}
+  .st-pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:7px;}
+  .st-sw{border:2px solid transparent;border-radius:8px;padding:10px 6px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;}
+  .st-sw.on{border-color:#1b2433;box-shadow:0 0 0 2px #fff inset;}
+  .st-prev{margin:12px 0 4px;}
+  .st-chip{display:inline-block;padding:5px 14px;border-radius:999px;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.03em;}
 </style>
 </head>
 <body>
@@ -598,8 +603,9 @@
     <div id="groupSubtabsBar"></div>
     <div class="toolbar">
       <button class="btn" id="addBtnTop">+ Adicionar nesta aba</button>
+      <button class="btn" id="etiquetasBtn" title="Criar, renomear e colorir etiquetas">🏷 Etiquetas</button>
       <div class="filter-row">
-        <label for="filterStatus">Status:</label>
+        <label for="filterStatus">Etiqueta:</label>
         <select id="filterStatus"><option value="todos">Todos</option></select>
         <label for="sortBy">Ordenar:</label>
         <select id="sortBy">
@@ -709,7 +715,7 @@
     </div>
     <div id="customFieldsContainer"></div>
     <div class="field">
-      <label for="fStatus">Status</label>
+      <label for="fStatus">Etiqueta</label>
       <select id="fStatus"></select>
     </div>
     <div class="lk-slot" id="lkSlotItem"></div>
@@ -844,7 +850,7 @@
     <h2>Configurações</h2>
     <div class="settings-nav">
       <button data-section="categorias" class="active">Categorias</button>
-      <button data-section="statuses">Status</button>
+      <button data-section="statuses">Etiquetas</button>
       <button data-section="fields">Campos</button>
       <button data-section="prazotypes">Tipos de Prazo</button>
       <button data-section="posttypes">Tipos de Post</button>
@@ -863,10 +869,10 @@
     </div>
 
     <div id="settingsSection_statuses" class="settings-section">
-      <p class="help-text">Crie, renomeie ou remova status. Clique no quadradinho colorido para escolher uma cor.</p>
+      <p class="help-text">Crie, renomeie ou remova etiquetas (Pendente, Feito, Urgente…). Clique no quadradinho colorido para escolher a cor. Dica: você também cria etiquetas direto no item, pela lista de etiquetas ("➕ Nova etiqueta…").</p>
       <div id="statusList"></div>
       <div class="add-row">
-        <input id="newStatusLabel" class="label-input" type="text" placeholder="Nome do novo status (ex: Em análise)">
+        <input id="newStatusLabel" class="label-input" type="text" placeholder="Nome da nova etiqueta (ex: Em análise)">
         <button class="btn primary small" id="addStatusBtn">+ Adicionar</button>
       </div>
     </div>
@@ -2367,6 +2373,7 @@ window.MindMapApp = (function(){
       if (item.status && !state.statuses.some(s => s.value === item.status)) {
         statusOptions += `<option value="${item.status}" selected>${escapeHtml(item.status)}</option>`;
       }
+      statusOptions += `<option disabled>──────────</option><option value="__new">➕ Nova etiqueta…</option><option value="__manage">⚙ Gerenciar etiquetas…</option>`;
       const extras = (state.customFields || [])
         .filter(f => item.extra && item.extra[f.id])
         .map(f => `<span class="extra"><span class="lbl">${escapeHtml(f.label)}:</span>${escapeHtml(item.extra[f.id])}</span>`)
@@ -2397,6 +2404,8 @@ window.MindMapApp = (function(){
         b.onchange = () => {
           const it = state.items.find(i => i.id === id);
           if (!it) return;
+          if (b.value === "__new") { b.value = it.status; createStatusFlow(st => { it.status = st.value; saveState(); renderAll(); }); return; }
+          if (b.value === "__manage") { b.value = it.status; openSettings("statuses"); return; }
           it.status = b.value;
           saveState();
           renderAll();
@@ -2951,8 +2960,12 @@ window.MindMapApp = (function(){
       opt.value = s.value; opt.textContent = s.label;
       sel.appendChild(opt);
     });
+    const o1 = document.createElement("option"); o1.disabled = true; o1.textContent = "──────────"; sel.appendChild(o1);
+    const o2 = document.createElement("option"); o2.value = "__new"; o2.textContent = "➕ Nova etiqueta…"; sel.appendChild(o2);
+    const o3 = document.createElement("option"); o3.value = "__manage"; o3.textContent = "⚙ Gerenciar etiquetas…"; sel.appendChild(o3);
     if (currentValue && state.statuses.some(s => s.value === currentValue)) sel.value = currentValue;
     else if (state.statuses.length) sel.value = state.statuses[0].value;
+    sel._prev = sel.value;
   }
   function applyFieldLabels() {
     document.getElementById("fNomeLabel").textContent = state.fieldLabels.nome;
@@ -3268,7 +3281,10 @@ window.MindMapApp = (function(){
     renderSettingsAll();
     document.getElementById("settingsModalBg").classList.add("open");
   }
-  function closeSettings() { document.getElementById("settingsModalBg").classList.remove("open"); }
+  function closeSettings() {
+    document.getElementById("settingsModalBg").classList.remove("open");
+    if (document.getElementById("modalBg").classList.contains("open")) fillStatusSelect(document.getElementById("fStatus")._prev);
+  }
   function switchSettingsSection(id) {
     document.querySelectorAll(".settings-nav button").forEach(b => b.classList.toggle("active", b.getAttribute("data-section") === id));
     document.querySelectorAll(".settings-section").forEach(s => s.classList.toggle("active", s.id === "settingsSection_" + id));
@@ -4089,6 +4105,56 @@ window.MindMapApp = (function(){
   document.getElementById("searchBtn").onclick = openSearch;
   document.getElementById("trashBtn").onclick = openTrashModal;
   document.getElementById("bibTabBtn").onclick = () => switchView("biblioteca");
+
+  // ---------- Criar etiqueta rapidamente (direto no item) ----------
+  function createStatus(label, c) {
+    let value = slugify(label);
+    while (state.statuses.find(s => s.value === value)) value = value + "_" + uid().slice(0, 3);
+    const st = { value, label, bg: c.bg, color: c.color };
+    state.statuses.push(st); saveState();
+    return st;
+  }
+  function createStatusFlow(onDone) {
+    let chosen = COLOR_PALETTE.find(c => !state.statuses.some(s => s.bg === c.bg)) || COLOR_PALETTE[0];
+    openLkModal((box, close) => {
+      box.appendChild(lkMk("h2", null, "Nova etiqueta"));
+      const f = lkMk("div", "field"); f.appendChild(lkMk("label", null, "Nome da etiqueta"));
+      const inp = lkMk("input"); inp.type = "text"; inp.placeholder = "Ex: Em análise, Aguardando cliente, Urgente…"; f.appendChild(inp); box.appendChild(f);
+      const f2 = lkMk("div", "field"); f2.appendChild(lkMk("label", null, "Cor")); const pal = lkMk("div", "st-pal"); f2.appendChild(pal); box.appendChild(f2);
+      const prev = lkMk("div", "st-prev"); box.appendChild(prev);
+      const paint = () => {
+        pal.innerHTML = "";
+        COLOR_PALETTE.forEach(c => {
+          const b = lkMk("button", "st-sw" + (c === chosen ? " on" : ""), c.name); b.type = "button"; b.style.background = c.bg; b.style.color = c.color;
+          b.onclick = () => { chosen = c; paint(); inp.focus(); }; pal.appendChild(b);
+        });
+        prev.innerHTML = ""; const chip = lkMk("span", "st-chip", inp.value.trim() || "Prévia"); chip.style.background = chosen.bg; chip.style.color = chosen.color; prev.appendChild(chip);
+      };
+      const submit = () => {
+        const label = inp.value.trim();
+        if (!label) { alert("Digite um nome para a etiqueta."); inp.focus(); return; }
+        const dup = state.statuses.find(s => fold(s.label) === fold(label));
+        if (dup) { alert('Já existe uma etiqueta chamada "' + dup.label + '".'); return; }
+        const st = createStatus(label, chosen); close(); onDone(st);
+      };
+      inp.oninput = paint;
+      inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); submit(); } else if (e.key === "Escape") { e.preventDefault(); close(); } });
+      paint();
+      const actions = lkMk("div", "modal-actions"); actions.appendChild(lkMk("span"));
+      const right = lkMk("div", "right");
+      const cancel = lkMk("button", "btn", "Cancelar"); cancel.onclick = close;
+      const ok = lkMk("button", "btn primary", "Criar etiqueta"); ok.onclick = submit;
+      right.appendChild(cancel); right.appendChild(ok); actions.appendChild(right); box.appendChild(actions);
+      setTimeout(() => inp.focus(), 40);
+    });
+  }
+  document.getElementById("etiquetasBtn").onclick = () => openSettings("statuses");
+  document.getElementById("fStatus").addEventListener("change", e => {
+    const sel = e.target;
+    if (sel.value === "__new") { const p = sel._prev; fillStatusSelect(p); createStatusFlow(st => fillStatusSelect(st.value)); }
+    else if (sel.value === "__manage") { fillStatusSelect(sel._prev); openSettings("statuses"); }
+    else sel._prev = sel.value;
+  });
 
   // ========== WIRING ==========
   document.getElementById("newBtn").onclick = () => openModal(null);
