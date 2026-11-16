@@ -560,35 +560,39 @@
   .q-tabact { display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin-bottom:14px; }
   .q-tabact-lbl { color:var(--text-faint); font-size:17px; margin-right:4px; }
   .q-board { display:flex; gap:14px; align-items:flex-start; overflow-x:auto; padding-bottom:16px; }
-  .q-col { flex:0 0 300px; width:300px; background:var(--border-soft); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:8px; transition:box-shadow .12s; }
+  .q-col { flex:1 1 300px; min-width:300px; max-width:440px; background:var(--border-soft); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:8px; transition:box-shadow .12s; }
   .q-col.over { box-shadow:0 0 0 2px var(--accent); }
   .q-col-head { display:flex; align-items:center; gap:4px; }
-  .q-col-title { flex:1; min-width:0; border:1px solid transparent !important; background:transparent !important; font-weight:600; font-size:19px; padding:5px 7px !important; border-radius:7px; }
+  .q-col-title { flex:1; min-width:0; border:1px solid transparent !important; background:transparent !important; font-weight:600; font-size:22px; padding:5px 7px !important; border-radius:7px; }
   .q-col-title:hover { border-color:var(--border) !important; background:var(--surface) !important; }
   .q-count { color:var(--text-faint); font-size:16px; padding:0 4px; }
   .q-ico { border:none; background:transparent; cursor:pointer; color:var(--text-faint); font-size:15px; padding:4px 5px; border-radius:6px; }
   .q-ico:hover { background:var(--surface); color:var(--text); }
-  .q-cards { display:flex; flex-direction:column; gap:8px; min-height:14px; }
-  .q-card { display:flex; gap:9px; align-items:flex-start; background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:10px 11px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+  .q-cards { display:flex; flex-direction:column; gap:12px; min-height:14px; }
+  .q-card { display:flex; gap:12px; align-items:flex-start; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 16px; min-height:78px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.04); }
   .q-card:hover { border-color:var(--accent); }
   .q-card.dragging { opacity:.4; }
-  .q-card[draggable="true"] { cursor:grab; }
+  .q-dragable { cursor:grab; user-select:none; -webkit-user-select:none; }
+  .q-grip { order:3; align-self:center; color:var(--text-faint); font-size:22px; line-height:1; padding:6px 2px 6px 6px; touch-action:none; cursor:grab; opacity:.55; }
+  .q-card:hover .q-grip { opacity:1; }
+  .q-ghost { position:fixed; z-index:400; pointer-events:none; opacity:.95; box-shadow:0 12px 28px rgba(0,0,0,.28); transform:rotate(1.5deg); margin:0; }
+  body.q-dragging, body.q-dragging * { cursor:grabbing !important; user-select:none !important; }
   .q-card.feito .q-title { text-decoration:line-through; color:var(--text-faint); }
   .q-card.feito { background:transparent; }
-  .q-chk { margin-top:3px; width:18px; height:18px; flex:none; accent-color:var(--accent); cursor:pointer; }
+  .q-chk { margin-top:4px; width:24px; height:24px; flex:none; accent-color:var(--accent); cursor:pointer; }
   .q-body { flex:1; min-width:0; }
-  .q-title { font-size:19px; line-height:1.3; word-break:break-word; white-space:pre-wrap; }
-  .q-meta { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; align-items:center; }
-  .q-chip { font-size:15px; padding:2px 8px; border-radius:999px; background:var(--border-soft); color:var(--text-soft); white-space:nowrap; }
+  .q-title { font-size:22px; line-height:1.35; word-break:break-word; white-space:pre-wrap; }
+  .q-meta { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; align-items:center; }
+  .q-chip { font-size:17px; padding:3px 11px; border-radius:999px; background:var(--border-soft); color:var(--text-soft); white-space:nowrap; }
   .q-chip.late { background:#fde2e2; color:#a12020; }
   .q-chip.today { background:#fff0c2; color:#7a5a00; }
   .q-chip.soon { background:#dff1e4; color:#256b3a; }
   .q-chip.done { background:#e4e4e4; color:#777; }
-  .q-origin { font-size:15px; color:var(--text-faint); }
-  .q-drop { height:5px; border-radius:3px; background:var(--accent); margin:-2px 0; }
-  .q-add-btn { width:100%; text-align:left; border:none; background:transparent; color:var(--text-soft); font:inherit; font-size:18px; padding:8px; border-radius:8px; cursor:pointer; }
+  .q-origin { font-size:17px; color:var(--text-faint); }
+  .q-drop { height:6px; border-radius:3px; background:var(--accent); margin:-2px 0; }
+  .q-add-btn { width:100%; text-align:left; border:none; background:transparent; color:var(--text-soft); font:inherit; font-size:20px; padding:12px 10px; border-radius:8px; cursor:pointer; }
   .q-add-btn:hover { background:var(--surface); color:var(--text); }
-  .q-add-input { width:100%; resize:none; }
+  .q-add-input { width:100%; resize:none; font-size:21px; }
   .q-add-row { display:flex; gap:7px; margin-top:6px; }
   .q-newcol { flex:0 0 220px; border:2px dashed var(--border); background:transparent; color:var(--text-soft); font:inherit; font-size:18px; padding:14px; border-radius:12px; cursor:pointer; }
   .q-newcol:hover { background:var(--border-soft); }
@@ -596,7 +600,7 @@
   .q-hoje-date { font-size:26px; font-weight:600; text-transform:capitalize; }
   .q-hoje-sum { color:var(--text-soft); margin-top:2px; }
   .q-sec { font-weight:600; margin:16px 0 8px; font-size:18px; }
-  .q-hoje-list { display:flex; flex-direction:column; gap:8px; max-width:640px; }
+  .q-hoje-list { display:flex; flex-direction:column; gap:12px; max-width:760px; }
   .q-prazo-ico { font-size:17px; }
   .q-hint { margin-top:22px; color:var(--text-faint); font-size:16px; max-width:640px; }
   .q-ck { display:flex; flex-direction:column; gap:6px; margin-bottom:6px; }
@@ -604,7 +608,7 @@
   .q-ck-row input[type=checkbox] { width:18px; height:18px; flex:none; accent-color:var(--accent); }
   .q-ck-txt { flex:1; }
   .q-move { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
-  @media (max-width:700px){ .q-col{flex-basis:84vw;width:84vw;} }
+  @media (max-width:700px){ .q-col{flex:0 0 88vw;min-width:0;max-width:none;width:88vw;} }
 </style>
 </head>
 <body>
@@ -4240,7 +4244,7 @@ window.MindMapApp = (function(){
   // guias (quadros) → colunas → cartões
   // =========================================================
   let quadroAtivo = "";
-  let qDragId = null, qAdding = null;
+  let qAdding = null;
   try { const sv = localStorage.getItem("quadroAtivo_esc"); if (sv) quadroAtivo = sv; } catch (e) {}
   function qSetAtivo(id) { quadroAtivo = id; try { localStorage.setItem("quadroAtivo_esc", id); } catch (e) {} }
   function qNewBoard(nome) {
@@ -4288,9 +4292,9 @@ window.MindMapApp = (function(){
     opts = opts || {};
     const el = lkMk("div", "q-card" + (card.feito ? " feito" : "")); el.dataset.id = card.id;
     if (!opts.noDrag) {
-      el.draggable = true;
-      el.addEventListener("dragstart", e => { qDragId = card.id; el.classList.add("dragging"); try { e.dataTransfer.setData("text/plain", card.id); e.dataTransfer.effectAllowed = "move"; } catch (x) {} });
-      el.addEventListener("dragend", () => { qDragId = null; el.classList.remove("dragging"); qClearDrop(); });
+      el.classList.add("q-dragable");
+      const grip = lkMk("span", "q-grip", "⠿"); grip.title = "Arraste para mudar de lugar"; el.appendChild(grip);
+      el.addEventListener("pointerdown", e => qPtrDown(e, el, card.id));
     }
     const chk = lkMk("input", "q-chk"); chk.type = "checkbox"; chk.checked = !!card.feito; chk.title = "Marcar como feito";
     chk.addEventListener("click", e => e.stopPropagation());
@@ -4306,7 +4310,7 @@ window.MindMapApp = (function(){
     if (opts.origin) meta.appendChild(lkMk("span", "q-origin", opts.origin));
     if (meta.children.length) body.appendChild(meta);
     el.appendChild(chk); el.appendChild(body);
-    el.addEventListener("click", () => openQCard(card.id));
+    el.addEventListener("click", () => { if (qSuppressClick) return; openQCard(card.id); });
     return el;
   }
 
@@ -4317,6 +4321,62 @@ window.MindMapApp = (function(){
     let idx = cards.length;
     for (let i = 0; i < cards.length; i++) { const r = cards[i].getBoundingClientRect(); if (y < r.top + r.height / 2) { idx = i; break; } }
     return { idx, cards };
+  }
+  let qDrag = null, qSuppressClick = false;
+  function qPtrDown(e, el, id) {
+    if (qDrag) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (e.target.closest("input,button,textarea,select,a")) return;
+    if (e.pointerType !== "mouse" && !e.target.closest(".q-grip")) return; // no toque, só pela alça (para poder rolar a tela)
+    qDrag = { id, el, sx: e.clientX, sy: e.clientY, started: false, ghost: null, colId: null, idx: 0, pid: e.pointerId };
+    document.addEventListener("pointermove", qPtrMove);
+    document.addEventListener("pointerup", qPtrUp);
+    document.addEventListener("pointercancel", qPtrCancel);
+    document.addEventListener("keydown", qPtrKey);
+  }
+  function qPtrKey(e) { if (e.key === "Escape") qPtrCancel(); }
+  function qPtrEnd() {
+    document.removeEventListener("pointermove", qPtrMove); document.removeEventListener("pointerup", qPtrUp);
+    document.removeEventListener("pointercancel", qPtrCancel); document.removeEventListener("keydown", qPtrKey);
+    if (qDrag) { if (qDrag.ghost) qDrag.ghost.remove(); qDrag.el.classList.remove("dragging"); }
+    document.body.classList.remove("q-dragging"); qClearDrop(); qDrag = null;
+  }
+  function qPtrCancel() { if (qDrag && qDrag.started) { qSuppressClick = true; setTimeout(() => { qSuppressClick = false; }, 0); } qPtrEnd(); }
+  function qPtrMove(e) {
+    const d = qDrag; if (!d) return;
+    if (!d.started) {
+      if (Math.abs(e.clientX - d.sx) + Math.abs(e.clientY - d.sy) < 7) return;
+      d.started = true;
+      const r = d.el.getBoundingClientRect();
+      d.ox = d.sx - r.left; d.oy = d.sy - r.top;
+      const g = d.el.cloneNode(true); g.className = "q-card q-ghost" + (d.el.classList.contains("feito") ? " feito" : "");
+      g.style.width = r.width + "px"; document.body.appendChild(g); d.ghost = g;
+      d.el.classList.add("dragging"); document.body.classList.add("q-dragging");
+      try { window.getSelection().removeAllRanges(); } catch (x) {}
+    }
+    e.preventDefault();
+    d.ghost.style.left = (e.clientX - d.ox) + "px"; d.ghost.style.top = (e.clientY - d.oy) + "px";
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    const col = under && under.closest(".q-col");
+    qClearDrop();
+    const board = document.querySelector(".q-board");
+    if (board) { // rolagem automática nas bordas
+      const br = board.getBoundingClientRect();
+      if (e.clientX > br.right - 60) board.scrollLeft += 18; else if (e.clientX < br.left + 60) board.scrollLeft -= 18;
+    }
+    if (e.clientY > window.innerHeight - 70) window.scrollBy(0, 16); else if (e.clientY < 70) window.scrollBy(0, -16);
+    if (col) {
+      const list = col.querySelector(".q-cards");
+      const { idx, cards } = qIndexAt(list, e.clientY);
+      const mk = lkMk("div", "q-drop"); if (cards[idx]) list.insertBefore(mk, cards[idx]); else list.appendChild(mk);
+      col.classList.add("over"); d.colId = col.dataset.id; d.idx = idx;
+    } else d.colId = null;
+  }
+  function qPtrUp() {
+    const d = qDrag; if (!d) return;
+    const moved = d.started, colId = d.colId, idx = d.idx, id = d.id;
+    qPtrEnd();
+    if (moved) { qSuppressClick = true; setTimeout(() => { qSuppressClick = false; }, 0); if (colId) qMoveCard(id, colId, idx); }
   }
   function qMoveCard(cardId, colId, idx) {
     const f = qFindCard(cardId); if (!f) return;
@@ -4372,16 +4432,6 @@ window.MindMapApp = (function(){
         addWrap.appendChild(bt);
       }
       c.appendChild(addWrap);
-      // soltar
-      c.addEventListener("dragover", e => {
-        if (!qDragId) return; e.preventDefault();
-        const { idx, cards } = qIndexAt(list, e.clientY);
-        document.querySelectorAll(".q-drop").forEach(x => x.remove());
-        const mk = lkMk("div", "q-drop"); if (cards[idx]) list.insertBefore(mk, cards[idx]); else list.appendChild(mk);
-        document.querySelectorAll(".q-col.over").forEach(x => { if (x !== c) x.classList.remove("over"); }); c.classList.add("over");
-      });
-      c.addEventListener("dragleave", e => { if (!c.contains(e.relatedTarget)) { c.classList.remove("over"); c.querySelectorAll(".q-drop").forEach(x => x.remove()); } });
-      c.addEventListener("drop", e => { if (!qDragId) return; e.preventDefault(); const { idx } = qIndexAt(list, e.clientY); const id = qDragId; qClearDrop(); qMoveCard(id, col.id, idx); });
       wrap.appendChild(c);
     });
     const newCol = lkMk("button", "q-newcol", "+ Nova coluna"); newCol.type = "button";
