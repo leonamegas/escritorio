@@ -608,6 +608,13 @@
   .q-ck-row input[type=checkbox] { width:18px; height:18px; flex:none; accent-color:var(--accent); }
   .q-ck-txt { flex:1; }
   .q-move { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+  .q-tab.colored { border-color:var(--qc); background:color-mix(in srgb, var(--qc) 14%, #fff); }
+  .q-tab.colored.active { background:var(--qc); color:#fff; border-color:var(--qc); }
+  .q-col.colored { border-top:6px solid var(--qc); background:color-mix(in srgb, var(--qc) 11%, var(--border-soft)); }
+  .q-pal { display:grid; grid-template-columns:repeat(2,1fr); gap:9px; margin:6px 0 4px; }
+  .q-sw { border:3px solid transparent; color:#fff; font:inherit; font-size:19px; font-weight:600; padding:13px 10px; border-radius:10px; cursor:pointer; text-shadow:0 1px 2px rgba(0,0,0,.25); }
+  .q-sw:hover { filter:brightness(1.08); }
+  .q-sw.on { border-color:var(--text); box-shadow:0 0 0 2px #fff inset; }
   @media (max-width:700px){ .q-col{flex:0 0 88vw;min-width:0;max-width:none;width:88vw;} }
 </style>
 </head>
@@ -4286,6 +4293,26 @@ window.MindMapApp = (function(){
       setTimeout(() => { inp.focus(); inp.select(); }, 40);
     });
   }
+  const Q_CORES = [
+    ["Vermelho", "#d64545"], ["Laranja", "#e8821e"], ["Amarelo", "#d9a400"], ["Verde", "#2e9e5b"], ["Turquesa", "#14a3a3"],
+    ["Azul", "#2f6fdb"], ["Roxo", "#7c4dcc"], ["Rosa", "#d6459a"], ["Marrom", "#8a5a3c"], ["Cinza", "#6b7280"]
+  ];
+  function qCorModal(titulo, atual, onPick) {
+    openLkModal((box, close) => {
+      box.appendChild(lkMk("h2", null, titulo));
+      const pal = lkMk("div", "q-pal");
+      Q_CORES.forEach(([nome, cor]) => {
+        const b = lkMk("button", "q-sw" + (atual === cor ? " on" : ""), nome); b.type = "button"; b.style.background = cor;
+        b.onclick = () => { close(); onPick(cor); }; pal.appendChild(b);
+      });
+      box.appendChild(pal);
+      const actions = lkMk("div", "modal-actions");
+      const none = lkMk("button", "btn", "Sem cor"); none.onclick = () => { close(); onPick(""); };
+      const fechar = lkMk("button", "btn", "Cancelar"); fechar.onclick = close;
+      actions.appendChild(none); actions.appendChild(fechar); box.appendChild(actions);
+    });
+  }
+  function qApplyCor(el, cor) { if (cor) { el.style.setProperty("--qc", cor); el.classList.add("colored"); } }
   function qChip(txt, cls) { return lkMk("span", "q-chip" + (cls ? " " + cls : ""), txt); }
 
   function qCardEl(card, board, col, opts) {
@@ -4392,7 +4419,7 @@ window.MindMapApp = (function(){
   function renderQBoard(root, b) {
     const wrap = lkMk("div", "q-board");
     b.colunas.forEach((col, ci) => {
-      const c = lkMk("div", "q-col"); c.dataset.id = col.id;
+      const c = lkMk("div", "q-col"); c.dataset.id = col.id; qApplyCor(c, col.cor);
       const head = lkMk("div", "q-col-head");
       const title = lkMk("input", "q-col-title"); title.type = "text"; title.value = col.nome; title.title = "Clique para renomear";
       title.addEventListener("change", () => { const v = title.value.trim(); if (v) { col.nome = v; saveState(); } else title.value = col.nome; });
@@ -4400,6 +4427,7 @@ window.MindMapApp = (function(){
       head.appendChild(title);
       head.appendChild(lkMk("span", "q-count", String(col.cards.length)));
       const mkIco = (t, tt, fn) => { const bt = lkMk("button", "q-ico", t); bt.type = "button"; bt.title = tt; bt.onclick = fn; return bt; };
+      head.appendChild(mkIco("🎨", "Mudar a cor da coluna", () => qCorModal("Cor da coluna “" + col.nome + "”", col.cor, v => { if (v) col.cor = v; else delete col.cor; saveState(); renderQuadros(); })));
       if (ci > 0) head.appendChild(mkIco("◀", "Mover coluna para a esquerda", () => { [b.colunas[ci - 1], b.colunas[ci]] = [b.colunas[ci], b.colunas[ci - 1]]; saveState(); renderQuadros(); }));
       if (ci < b.colunas.length - 1) head.appendChild(mkIco("▶", "Mover coluna para a direita", () => { [b.colunas[ci + 1], b.colunas[ci]] = [b.colunas[ci], b.colunas[ci + 1]]; saveState(); renderQuadros(); }));
       head.appendChild(mkIco("🗑", "Excluir coluna", () => {
@@ -4491,8 +4519,8 @@ window.MindMapApp = (function(){
     if (quadroAtivo !== "hoje" && !qBoard(quadroAtivo)) qSetAtivo(state.quadros.length ? state.quadros[0].id : "hoje");
     root.innerHTML = "";
     const bar = lkMk("div", "q-tabs");
-    const tab = (label, id) => { const b = lkMk("button", "q-tab" + (quadroAtivo === id ? " active" : ""), label); b.type = "button"; b.onclick = () => { qAdding = null; qSetAtivo(id); renderQuadros(); }; return b; };
-    state.quadros.forEach(b => bar.appendChild(tab(b.nome, b.id)));
+    const tab = (label, id, cor) => { const b = lkMk("button", "q-tab" + (quadroAtivo === id ? " active" : ""), label); b.type = "button"; qApplyCor(b, cor); b.onclick = () => { qAdding = null; qSetAtivo(id); renderQuadros(); }; return b; };
+    state.quadros.forEach(b => bar.appendChild(tab(b.nome, b.id, b.cor)));
     bar.appendChild(tab("☀️ Vence hoje", "hoje"));
     const nova = lkMk("button", "q-tab q-tab-new", "+ Nova guia"); nova.type = "button";
     nova.onclick = () => qAsk("Nova guia", "Nome da guia (ex: Afazeres hoje, Projetos)", "", "Criar", v => { const nb = qNewBoard(v); state.quadros.push(nb); saveState(); qSetAtivo(nb.id); renderQuadros(); });
@@ -4505,6 +4533,7 @@ window.MindMapApp = (function(){
       const bi = state.quadros.indexOf(b);
       act.appendChild(lkMk("span", "q-tabact-lbl", "Guia “" + b.nome + "”:"));
       act.appendChild(mk("✎ Renomear", "Renomear esta guia", () => qAsk("Renomear guia", "Novo nome", b.nome, "Salvar", v => { b.nome = v; saveState(); renderQuadros(); })));
+      act.appendChild(mk("🎨 Cor", "Mudar a cor desta guia", () => qCorModal("Cor da guia “" + b.nome + "”", b.cor, v => { if (v) b.cor = v; else delete b.cor; saveState(); renderQuadros(); })));
       if (bi > 0) act.appendChild(mk("◀ Mover", "Mover guia para a esquerda", () => { [state.quadros[bi - 1], state.quadros[bi]] = [state.quadros[bi], state.quadros[bi - 1]]; saveState(); renderQuadros(); }));
       if (bi < state.quadros.length - 1) act.appendChild(mk("Mover ▶", "Mover guia para a direita", () => { [state.quadros[bi + 1], state.quadros[bi]] = [state.quadros[bi], state.quadros[bi + 1]]; saveState(); renderQuadros(); }));
       act.appendChild(mk("🗑 Excluir guia", "Excluir esta guia (vai para a Lixeira)", () => {
