@@ -550,6 +550,61 @@
   .st-sw.on{border-color:#1b2433;box-shadow:0 0 0 2px #fff inset;}
   .st-prev{margin:12px 0 4px;}
   .st-chip{display:inline-block;padding:5px 14px;border-radius:999px;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.03em;}
+  /* ===== Quadros ===== */
+  #quadrosView { padding: 0 0 40px; }
+  .q-tabs { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:12px; }
+  .q-tab { border:1px solid var(--border); background:var(--surface); color:var(--text); padding:9px 16px; border-radius:999px; font:inherit; font-size:18px; cursor:pointer; }
+  .q-tab:hover { background:var(--border-soft); }
+  .q-tab.active { background:var(--text); color:#fff; border-color:var(--text); }
+  .q-tab-new { border-style:dashed; color:var(--text-soft); background:transparent; }
+  .q-tabact { display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin-bottom:14px; }
+  .q-tabact-lbl { color:var(--text-faint); font-size:17px; margin-right:4px; }
+  .q-board { display:flex; gap:14px; align-items:flex-start; overflow-x:auto; padding-bottom:16px; }
+  .q-col { flex:0 0 300px; width:300px; background:var(--border-soft); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:8px; transition:box-shadow .12s; }
+  .q-col.over { box-shadow:0 0 0 2px var(--accent); }
+  .q-col-head { display:flex; align-items:center; gap:4px; }
+  .q-col-title { flex:1; min-width:0; border:1px solid transparent !important; background:transparent !important; font-weight:600; font-size:19px; padding:5px 7px !important; border-radius:7px; }
+  .q-col-title:hover { border-color:var(--border) !important; background:var(--surface) !important; }
+  .q-count { color:var(--text-faint); font-size:16px; padding:0 4px; }
+  .q-ico { border:none; background:transparent; cursor:pointer; color:var(--text-faint); font-size:15px; padding:4px 5px; border-radius:6px; }
+  .q-ico:hover { background:var(--surface); color:var(--text); }
+  .q-cards { display:flex; flex-direction:column; gap:8px; min-height:14px; }
+  .q-card { display:flex; gap:9px; align-items:flex-start; background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:10px 11px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+  .q-card:hover { border-color:var(--accent); }
+  .q-card.dragging { opacity:.4; }
+  .q-card[draggable="true"] { cursor:grab; }
+  .q-card.feito .q-title { text-decoration:line-through; color:var(--text-faint); }
+  .q-card.feito { background:transparent; }
+  .q-chk { margin-top:3px; width:18px; height:18px; flex:none; accent-color:var(--accent); cursor:pointer; }
+  .q-body { flex:1; min-width:0; }
+  .q-title { font-size:19px; line-height:1.3; word-break:break-word; white-space:pre-wrap; }
+  .q-meta { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; align-items:center; }
+  .q-chip { font-size:15px; padding:2px 8px; border-radius:999px; background:var(--border-soft); color:var(--text-soft); white-space:nowrap; }
+  .q-chip.late { background:#fde2e2; color:#a12020; }
+  .q-chip.today { background:#fff0c2; color:#7a5a00; }
+  .q-chip.soon { background:#dff1e4; color:#256b3a; }
+  .q-chip.done { background:#e4e4e4; color:#777; }
+  .q-origin { font-size:15px; color:var(--text-faint); }
+  .q-drop { height:5px; border-radius:3px; background:var(--accent); margin:-2px 0; }
+  .q-add-btn { width:100%; text-align:left; border:none; background:transparent; color:var(--text-soft); font:inherit; font-size:18px; padding:8px; border-radius:8px; cursor:pointer; }
+  .q-add-btn:hover { background:var(--surface); color:var(--text); }
+  .q-add-input { width:100%; resize:none; }
+  .q-add-row { display:flex; gap:7px; margin-top:6px; }
+  .q-newcol { flex:0 0 220px; border:2px dashed var(--border); background:transparent; color:var(--text-soft); font:inherit; font-size:18px; padding:14px; border-radius:12px; cursor:pointer; }
+  .q-newcol:hover { background:var(--border-soft); }
+  .q-hoje-head { margin-bottom:12px; }
+  .q-hoje-date { font-size:26px; font-weight:600; text-transform:capitalize; }
+  .q-hoje-sum { color:var(--text-soft); margin-top:2px; }
+  .q-sec { font-weight:600; margin:16px 0 8px; font-size:18px; }
+  .q-hoje-list { display:flex; flex-direction:column; gap:8px; max-width:640px; }
+  .q-prazo-ico { font-size:17px; }
+  .q-hint { margin-top:22px; color:var(--text-faint); font-size:16px; max-width:640px; }
+  .q-ck { display:flex; flex-direction:column; gap:6px; margin-bottom:6px; }
+  .q-ck-row { display:flex; gap:7px; align-items:center; }
+  .q-ck-row input[type=checkbox] { width:18px; height:18px; flex:none; accent-color:var(--accent); }
+  .q-ck-txt { flex:1; }
+  .q-move { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+  @media (max-width:700px){ .q-col{flex-basis:84vw;width:84vw;} }
 </style>
 </head>
 <body>
@@ -568,6 +623,7 @@
     </div>
     <div class="sb-search-wrap"><button type="button" class="sb-search" id="searchBtn">🔎 <span>Buscar em tudo</span> <span class="kbd">Ctrl K</span></button></div>
     <nav class="sidebar-nav">
+      <button class="tab cal-tab" id="quadrosTabBtn"><span>📋</span><span>Quadros</span></button>
       <button class="tab cal-tab" id="dashTabBtn"><span>📊</span><span>Visão Geral</span></button>
       <button class="tab cal-tab" id="calTabBtn"><span>📅</span><span>Calendário</span></button>
       <button class="tab cal-tab" id="postsTabBtn"><span>📱</span><span>Calendário de Posts</span></button>
@@ -683,6 +739,7 @@
   </div>
   <div id="mapaView" class="cal-wrap"></div>
   <div id="bibliotecaView" class="cal-wrap"></div>
+  <div id="quadrosView" class="cal-wrap"></div>
     </main>
   </div>
 </div>
@@ -1660,6 +1717,7 @@ window.MindMapApp = (function(){
   function normalizeState(s) {
     s = s && typeof s === "object" ? s : {};
     if (!s.items || !Array.isArray(s.items)) s.items = [];
+    if (!Array.isArray(s.quadros)) s.quadros = [];
     if (!s.categorias || !Array.isArray(s.categorias) || s.categorias.length === 0) {
       s.categorias = JSON.parse(JSON.stringify(DEFAULT_CATEGORIAS));
     }
@@ -2184,6 +2242,8 @@ window.MindMapApp = (function(){
     document.getElementById("dashboardView").classList.toggle("active", view === "dashboard");
     document.getElementById("mapaView").classList.toggle("active", view === "mapa");
     document.getElementById("bibliotecaView").classList.toggle("active", view === "biblioteca");
+    document.getElementById("quadrosView").classList.toggle("active", view === "quadros");
+    document.getElementById("quadrosTabBtn").classList.toggle("active", view === "quadros");
     document.getElementById("bibTabBtn").classList.toggle("active", view === "biblioteca");
     document.getElementById("calTabBtn").classList.toggle("active", view === "calendario");
     document.getElementById("postsTabBtn").classList.toggle("active", view === "postsCalendario");
@@ -2197,6 +2257,7 @@ window.MindMapApp = (function(){
     if (view === "dashboard") renderDashboard();
     if (view === "mapa") mapaApp.render();
     if (view === "biblioteca") renderBiblioteca();
+    if (view === "quadros") renderQuadros();
     closeSidebarMobile();
   }
 
@@ -2544,6 +2605,7 @@ window.MindMapApp = (function(){
     if (activeView === "dashboard") renderDashboard();
     if (activeView === "mapa") mapaApp.render();
     if (activeView === "biblioteca") renderBiblioteca();
+    if (activeView === "quadros") renderQuadros();
     trashPurge(); updateTrashBtn();
   }
 
@@ -3818,6 +3880,18 @@ window.MindMapApp = (function(){
       if (!state[e.coll].some(x => x.id === e.item.id)) state[e.coll].push(e.item);
     } else if (e.kind === "mapa") {
       if (!state.mapas.some(x => x.id === e.map.id)) state.mapas.push(e.map);
+    } else if (e.kind === "card") {
+      if (!qFindCard(e.card.id)) {
+        if (!state.quadros.length) state.quadros.push(qNewBoard("Restaurados"));
+        const b = qBoard(e.quadroId) || state.quadros[0];
+        const c = b.colunas.find(x => x.id === e.colId) || b.colunas[0] || (b.colunas.push({ id: uid(), nome: "A fazer", cards: [] }), b.colunas[0]);
+        c.cards.splice(Math.min(e.idx == null ? c.cards.length : e.idx, c.cards.length), 0, e.card);
+      }
+    } else if (e.kind === "coluna") {
+      const b = qBoard(e.quadroId) || state.quadros[0];
+      if (b && !b.colunas.some(x => x.id === e.col.id)) b.colunas.splice(Math.min(e.idx == null ? b.colunas.length : e.idx, b.colunas.length), 0, e.col);
+    } else if (e.kind === "quadro") {
+      if (!state.quadros.some(x => x.id === e.quadro.id)) state.quadros.splice(Math.min(e.idx == null ? state.quadros.length : e.idx, state.quadros.length), 0, e.quadro);
     }
     t.splice(i, 1); saveState(); return true;
   }
@@ -3875,7 +3949,7 @@ window.MindMapApp = (function(){
         if (!t.length) { list.appendChild(lkMk("div", "sr-empty", "A lixeira está vazia.")); return; }
         t.forEach(e => {
           const row = lkMk("div", "tr-row"), info = lkMk("div", "tr-info");
-          info.appendChild(lkMk("div", "tr-title", (e.kind === "mapa" ? "🗺️ " : "📄 ") + (e.label || "(sem título)")));
+          info.appendChild(lkMk("div", "tr-title", (e.kind === "mapa" ? "🗺️ " : (e.kind === "card" || e.kind === "coluna" || e.kind === "quadro") ? "📋 " : "📄 ") + (e.label || "(sem título)")));
           info.appendChild(lkMk("div", "tr-meta", (e.kind === "mapa" ? "Mapa mental" : (e.where || "")) + " · excluído " + agoText(e.deletedAt)));
           const rest = lkMk("button", "btn primary small", "Restaurar");
           rest.onclick = () => { if (trashRestore(e.id)) { lkToast("Restaurado."); paint(); refreshAfterTrash(); } };
@@ -4002,6 +4076,10 @@ window.MindMapApp = (function(){
     d.biblioteca.forEach(b => {
       out.push({ kind: "item", coll: "biblioteca", item: b, title: b.titulo || b.url, where: "Biblioteca de links", fields: [b.titulo, b.url, b.categoria, b.obs].filter(Boolean).map(String) });
     });
+    (d.quadros || []).forEach(b => b.colunas.forEach(c => c.cards.forEach(cd => {
+      const f = [cd.titulo, cd.nota]; (cd.checklist || []).forEach(x => f.push(x.t)); lkList(cd).forEach(l => f.push((l.nome || "") + " " + l.url));
+      out.push({ kind: "item", coll: "quadros", item: cd, boardId: b.id, title: cd.titulo || "(sem título)", where: "Quadros · " + b.nome + " · " + c.nome, fields: f.filter(Boolean).map(String) });
+    })));
     d.mapas.forEach(m => {
       out.push({ kind: "mapa", mapId: m.id, title: m.titulo || "Mapa", where: "Mapa mental", fields: [m.titulo || ""], link: "" });
       (function walk(n, depth) {
@@ -4056,6 +4134,7 @@ window.MindMapApp = (function(){
     else if (e.coll === "posts") { switchView("postsCalendario"); openPostModal(it.id); }
     else if (e.coll === "teses") { switchView("teses"); openTeseModal(it.id); }
     else if (e.coll === "biblioteca") { switchView("biblioteca"); openBibModal(it.id); }
+    else if (e.coll === "quadros") { qSetAtivo(e.boardId); switchView("quadros"); openQCard(it.id); }
   }
   let srOv = null;
   function closeSearch() { if (srOv) { srOv.remove(); srOv = null; } }
@@ -4155,6 +4234,314 @@ window.MindMapApp = (function(){
     else if (sel.value === "__manage") { fillStatusSelect(sel._prev); openSettings("statuses"); }
     else sel._prev = sel.value;
   });
+
+  // =========================================================
+  // QUADROS — cartões estilo Trello, versão simples
+  // guias (quadros) → colunas → cartões
+  // =========================================================
+  let quadroAtivo = "";
+  let qDragId = null, qAdding = null;
+  try { const sv = localStorage.getItem("quadroAtivo_esc"); if (sv) quadroAtivo = sv; } catch (e) {}
+  function qSetAtivo(id) { quadroAtivo = id; try { localStorage.setItem("quadroAtivo_esc", id); } catch (e) {} }
+  function qNewBoard(nome) {
+    return { id: uid(), nome, colunas: ["A fazer", "Fazendo", "Feito"].map(n => ({ id: uid(), nome: n, cards: [] })) };
+  }
+  function qInit() {
+    if (!state.quadrosInit && state.quadros.length === 0) {
+      state.quadros = ["Afazeres hoje", "Afazeres da semana", "Projetos"].map(qNewBoard);
+      state.quadrosInit = true; saveState();
+    }
+  }
+  function qBoard(id) { return state.quadros.find(b => b.id === id); }
+  function qFindCard(cardId) {
+    for (const b of state.quadros) for (const c of b.colunas) { const i = c.cards.findIndex(x => x.id === cardId); if (i > -1) return { board: b, col: c, card: c.cards[i], idx: i }; }
+    return null;
+  }
+  function qDateInfo(d, feito) {
+    if (!d) return null;
+    const t = todayStr(), [, m, dd] = d.split("-");
+    let txt = dd + "/" + m, cls = d < t ? "late" : "";
+    if (d === t) { txt = "Hoje"; cls = "today"; }
+    else if (d === addDaysToDateStr(t, 1)) { txt = "Amanhã"; cls = "soon"; }
+    else if (d === addDaysToDateStr(t, -1)) { txt = "Ontem"; cls = "late"; }
+    if (feito) cls = "done";
+    return { txt, cls };
+  }
+  function qAsk(title, label, initial, okText, onOk) {
+    openLkModal((box, close) => {
+      box.appendChild(lkMk("h2", null, title));
+      const f = lkMk("div", "field"); f.appendChild(lkMk("label", null, label));
+      const inp = lkMk("input"); inp.type = "text"; inp.value = initial || ""; f.appendChild(inp); box.appendChild(f);
+      const submit = () => { const v = inp.value.trim(); if (!v) { inp.focus(); return; } close(); onOk(v); };
+      inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); submit(); } else if (e.key === "Escape") { e.preventDefault(); close(); } });
+      const actions = lkMk("div", "modal-actions"); actions.appendChild(lkMk("span"));
+      const right = lkMk("div", "right");
+      const cancel = lkMk("button", "btn", "Cancelar"); cancel.onclick = close;
+      const ok = lkMk("button", "btn primary", okText || "Salvar"); ok.onclick = submit;
+      right.appendChild(cancel); right.appendChild(ok); actions.appendChild(right); box.appendChild(actions);
+      setTimeout(() => { inp.focus(); inp.select(); }, 40);
+    });
+  }
+  function qChip(txt, cls) { return lkMk("span", "q-chip" + (cls ? " " + cls : ""), txt); }
+
+  function qCardEl(card, board, col, opts) {
+    opts = opts || {};
+    const el = lkMk("div", "q-card" + (card.feito ? " feito" : "")); el.dataset.id = card.id;
+    if (!opts.noDrag) {
+      el.draggable = true;
+      el.addEventListener("dragstart", e => { qDragId = card.id; el.classList.add("dragging"); try { e.dataTransfer.setData("text/plain", card.id); e.dataTransfer.effectAllowed = "move"; } catch (x) {} });
+      el.addEventListener("dragend", () => { qDragId = null; el.classList.remove("dragging"); qClearDrop(); });
+    }
+    const chk = lkMk("input", "q-chk"); chk.type = "checkbox"; chk.checked = !!card.feito; chk.title = "Marcar como feito";
+    chk.addEventListener("click", e => e.stopPropagation());
+    chk.addEventListener("change", () => { card.feito = chk.checked; saveState(); renderQuadros(); });
+    const body = lkMk("div", "q-body");
+    body.appendChild(lkMk("div", "q-title", card.titulo || "(sem título)"));
+    const meta = lkMk("div", "q-meta");
+    if (card.status) { const d = getStatusDef(card.status); const c = qChip(d.label, "etq"); c.style.background = d.bg; c.style.color = d.color; meta.appendChild(c); }
+    const di = qDateInfo(card.data, card.feito); if (di) meta.appendChild(qChip("📅 " + di.txt, di.cls));
+    const ck = card.checklist || []; if (ck.length) { const n = ck.filter(x => x.done).length; meta.appendChild(qChip("☑ " + n + "/" + ck.length, n === ck.length ? "done" : "")); }
+    if (lkList(card).length) meta.appendChild(qChip("🔗 " + lkList(card).length));
+    if (card.nota) meta.appendChild(qChip("📝"));
+    if (opts.origin) meta.appendChild(lkMk("span", "q-origin", opts.origin));
+    if (meta.children.length) body.appendChild(meta);
+    el.appendChild(chk); el.appendChild(body);
+    el.addEventListener("click", () => openQCard(card.id));
+    return el;
+  }
+
+  // ---- arrastar e soltar ----
+  function qClearDrop() { document.querySelectorAll(".q-drop").forEach(x => x.remove()); document.querySelectorAll(".q-col.over").forEach(x => x.classList.remove("over")); }
+  function qIndexAt(list, y) {
+    const cards = [].slice.call(list.querySelectorAll(".q-card:not(.dragging)"));
+    let idx = cards.length;
+    for (let i = 0; i < cards.length; i++) { const r = cards[i].getBoundingClientRect(); if (y < r.top + r.height / 2) { idx = i; break; } }
+    return { idx, cards };
+  }
+  function qMoveCard(cardId, colId, idx) {
+    const f = qFindCard(cardId); if (!f) return;
+    let target = null; for (const b of state.quadros) { const c = b.colunas.find(x => x.id === colId); if (c) { target = c; break; } }
+    if (!target) return;
+    f.col.cards.splice(f.idx, 1);
+    if (idx == null || idx > target.cards.length) idx = target.cards.length;
+    target.cards.splice(idx, 0, f.card);
+    saveState(); renderQuadros();
+  }
+
+  // ---- visão de um quadro ----
+  function renderQBoard(root, b) {
+    const wrap = lkMk("div", "q-board");
+    b.colunas.forEach((col, ci) => {
+      const c = lkMk("div", "q-col"); c.dataset.id = col.id;
+      const head = lkMk("div", "q-col-head");
+      const title = lkMk("input", "q-col-title"); title.type = "text"; title.value = col.nome; title.title = "Clique para renomear";
+      title.addEventListener("change", () => { const v = title.value.trim(); if (v) { col.nome = v; saveState(); } else title.value = col.nome; });
+      title.addEventListener("keydown", e => { if (e.key === "Enter") title.blur(); });
+      head.appendChild(title);
+      head.appendChild(lkMk("span", "q-count", String(col.cards.length)));
+      const mkIco = (t, tt, fn) => { const bt = lkMk("button", "q-ico", t); bt.type = "button"; bt.title = tt; bt.onclick = fn; return bt; };
+      if (ci > 0) head.appendChild(mkIco("◀", "Mover coluna para a esquerda", () => { [b.colunas[ci - 1], b.colunas[ci]] = [b.colunas[ci], b.colunas[ci - 1]]; saveState(); renderQuadros(); }));
+      if (ci < b.colunas.length - 1) head.appendChild(mkIco("▶", "Mover coluna para a direita", () => { [b.colunas[ci + 1], b.colunas[ci]] = [b.colunas[ci], b.colunas[ci + 1]]; saveState(); renderQuadros(); }));
+      head.appendChild(mkIco("🗑", "Excluir coluna", () => {
+        if (col.cards.length && !confirm('Excluir a coluna "' + col.nome + '" com ' + col.cards.length + ' cartão(ões)? Ela vai para a Lixeira.')) return;
+        const tid = trashPush({ kind: "coluna", quadroId: b.id, col, idx: ci, label: col.nome + (col.cards.length ? " (" + col.cards.length + " cartões)" : ""), where: "Quadros · " + b.nome });
+        b.colunas.splice(ci, 1); saveState(); updateTrashBtn(); renderQuadros(); undoToast("Coluna excluída.", tid);
+      }));
+      c.appendChild(head);
+      const list = lkMk("div", "q-cards");
+      col.cards.forEach(card => list.appendChild(qCardEl(card, b, col)));
+      c.appendChild(list);
+      // adicionar cartão
+      const addWrap = lkMk("div", "q-add");
+      if (qAdding === col.id) {
+        const ta = lkMk("textarea", "q-add-input"); ta.rows = 2; ta.placeholder = "Digite o que precisa fazer e tecle Enter…";
+        const row = lkMk("div", "q-add-row");
+        const ok = lkMk("button", "btn primary small", "Adicionar"); ok.type = "button";
+        const cancel = lkMk("button", "btn small", "✕"); cancel.type = "button"; cancel.title = "Fechar";
+        const submit = () => {
+          const v = ta.value.trim(); if (!v) { ta.focus(); return; }
+          col.cards.push({ id: uid(), titulo: v, criado: Date.now() }); saveState(); renderQuadros();
+        };
+        ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } else if (e.key === "Escape") { qAdding = null; renderQuadros(); } });
+        ok.onclick = submit; cancel.onclick = () => { qAdding = null; renderQuadros(); };
+        row.appendChild(ok); row.appendChild(cancel); addWrap.appendChild(ta); addWrap.appendChild(row);
+        setTimeout(() => ta.focus(), 0);
+      } else {
+        const bt = lkMk("button", "q-add-btn", "+ Adicionar cartão"); bt.type = "button";
+        bt.onclick = () => { qAdding = col.id; renderQuadros(); };
+        addWrap.appendChild(bt);
+      }
+      c.appendChild(addWrap);
+      // soltar
+      c.addEventListener("dragover", e => {
+        if (!qDragId) return; e.preventDefault();
+        const { idx, cards } = qIndexAt(list, e.clientY);
+        document.querySelectorAll(".q-drop").forEach(x => x.remove());
+        const mk = lkMk("div", "q-drop"); if (cards[idx]) list.insertBefore(mk, cards[idx]); else list.appendChild(mk);
+        document.querySelectorAll(".q-col.over").forEach(x => { if (x !== c) x.classList.remove("over"); }); c.classList.add("over");
+      });
+      c.addEventListener("dragleave", e => { if (!c.contains(e.relatedTarget)) { c.classList.remove("over"); c.querySelectorAll(".q-drop").forEach(x => x.remove()); } });
+      c.addEventListener("drop", e => { if (!qDragId) return; e.preventDefault(); const { idx } = qIndexAt(list, e.clientY); const id = qDragId; qClearDrop(); qMoveCard(id, col.id, idx); });
+      wrap.appendChild(c);
+    });
+    const newCol = lkMk("button", "q-newcol", "+ Nova coluna"); newCol.type = "button";
+    newCol.onclick = () => qAsk("Nova coluna", "Nome da coluna", "", "Criar", v => { b.colunas.push({ id: uid(), nome: v, cards: [] }); saveState(); renderQuadros(); });
+    wrap.appendChild(newCol);
+    root.appendChild(wrap);
+  }
+
+  // ---- resumo automático: o que vence hoje ----
+  function renderQHoje(root) {
+    const t = todayStr();
+    const late = [], today = [];
+    state.quadros.forEach(b => b.colunas.forEach(c => c.cards.forEach(cd => {
+      if (cd.feito || !cd.data) return;
+      const row = { kind: "card", cd, b, c, data: cd.data, hora: "" };
+      if (cd.data < t) late.push(row); else if (cd.data === t) today.push(row);
+    })));
+    (state.prazos || []).forEach(p => {
+      if (!p.data) return;
+      const row = { kind: "prazo", p, data: p.data, hora: p.hora || "" };
+      if (p.data < t) late.push(row); else if (p.data === t) today.push(row);
+    });
+    const cmp = (a, b) => (a.data + a.hora).localeCompare(b.data + b.hora);
+    late.sort(cmp); today.sort(cmp);
+    const d = new Date();
+    const head = lkMk("div", "q-hoje-head");
+    head.appendChild(lkMk("div", "q-hoje-date", DIAS_SEMANA_LONGOS[d.getDay()] + ", " + d.getDate() + " de " + MESES_LONGOS[d.getMonth()]));
+    head.appendChild(lkMk("div", "q-hoje-sum", (late.length + today.length) ? (today.length + " para hoje · " + late.length + " atrasado" + (late.length === 1 ? "" : "s")) : "Nada com data para hoje 🎉"));
+    root.appendChild(head);
+    const section = (titulo, rows, cls) => {
+      if (!rows.length) return;
+      root.appendChild(lkMk("div", "q-sec " + cls, titulo + " · " + rows.length));
+      const box = lkMk("div", "q-hoje-list");
+      rows.forEach(r => {
+        if (r.kind === "card") {
+          box.appendChild(qCardEl(r.cd, r.b, r.c, { noDrag: true, origin: r.b.nome + " › " + r.c.nome }));
+        } else {
+          const el = lkMk("div", "q-card q-prazo");
+          el.appendChild(lkMk("span", "q-prazo-ico", "⚖️"));
+          const body = lkMk("div", "q-body"); body.appendChild(lkMk("div", "q-title", r.p.titulo || "(sem título)"));
+          const meta = lkMk("div", "q-meta"); const di = qDateInfo(r.p.data, false);
+          meta.appendChild(qChip("📅 " + (di ? di.txt : r.p.data) + (r.hora ? " " + r.hora : ""), di ? di.cls : "")); meta.appendChild(lkMk("span", "q-origin", "Prazo do Calendário"));
+          body.appendChild(meta); el.appendChild(body);
+          el.onclick = () => { switchView("calendario"); openPrazoModal(r.p.id); };
+          box.appendChild(el);
+        }
+      });
+      root.appendChild(box);
+    };
+    section("🔴 Atrasados", late, "late"); section("🟡 Para hoje", today, "today");
+    root.appendChild(lkMk("div", "q-hint", "Aqui aparecem os cartões (e os prazos do Calendário) com data de hoje ou atrasada. Para um cartão entrar, abra-o e escolha a data."));
+  }
+
+  function renderQuadros() {
+    const root = document.getElementById("quadrosView"); if (!root) return;
+    qInit();
+    if (quadroAtivo !== "hoje" && !qBoard(quadroAtivo)) qSetAtivo(state.quadros.length ? state.quadros[0].id : "hoje");
+    root.innerHTML = "";
+    const bar = lkMk("div", "q-tabs");
+    const tab = (label, id) => { const b = lkMk("button", "q-tab" + (quadroAtivo === id ? " active" : ""), label); b.type = "button"; b.onclick = () => { qAdding = null; qSetAtivo(id); renderQuadros(); }; return b; };
+    state.quadros.forEach(b => bar.appendChild(tab(b.nome, b.id)));
+    bar.appendChild(tab("☀️ Vence hoje", "hoje"));
+    const nova = lkMk("button", "q-tab q-tab-new", "+ Nova guia"); nova.type = "button";
+    nova.onclick = () => qAsk("Nova guia", "Nome da guia (ex: Afazeres hoje, Projetos)", "", "Criar", v => { const nb = qNewBoard(v); state.quadros.push(nb); saveState(); qSetAtivo(nb.id); renderQuadros(); });
+    bar.appendChild(nova);
+    root.appendChild(bar);
+    const b = quadroAtivo === "hoje" ? null : qBoard(quadroAtivo);
+    if (b) {
+      const act = lkMk("div", "q-tabact");
+      const mk = (t, tt, fn) => { const bt = lkMk("button", "btn small", t); bt.type = "button"; bt.title = tt; bt.onclick = fn; return bt; };
+      const bi = state.quadros.indexOf(b);
+      act.appendChild(lkMk("span", "q-tabact-lbl", "Guia “" + b.nome + "”:"));
+      act.appendChild(mk("✎ Renomear", "Renomear esta guia", () => qAsk("Renomear guia", "Novo nome", b.nome, "Salvar", v => { b.nome = v; saveState(); renderQuadros(); })));
+      if (bi > 0) act.appendChild(mk("◀ Mover", "Mover guia para a esquerda", () => { [state.quadros[bi - 1], state.quadros[bi]] = [state.quadros[bi], state.quadros[bi - 1]]; saveState(); renderQuadros(); }));
+      if (bi < state.quadros.length - 1) act.appendChild(mk("Mover ▶", "Mover guia para a direita", () => { [state.quadros[bi + 1], state.quadros[bi]] = [state.quadros[bi], state.quadros[bi + 1]]; saveState(); renderQuadros(); }));
+      act.appendChild(mk("🗑 Excluir guia", "Excluir esta guia (vai para a Lixeira)", () => {
+        const n = b.colunas.reduce((s, c) => s + c.cards.length, 0);
+        if (!confirm('Excluir a guia "' + b.nome + '"' + (n ? " com " + n + " cartão(ões)" : "") + "? Ela vai para a Lixeira e pode ser restaurada por 30 dias.")) return;
+        const tid = trashPush({ kind: "quadro", quadro: b, idx: bi, label: b.nome + (n ? " (" + n + " cartões)" : ""), where: "Quadros" });
+        state.quadros.splice(bi, 1); qSetAtivo(state.quadros.length ? state.quadros[Math.max(0, bi - 1)].id : "hoje"); saveState(); updateTrashBtn(); renderQuadros(); undoToast("Guia excluída.", tid);
+      }));
+      root.appendChild(act);
+      renderQBoard(root, b);
+    } else {
+      renderQHoje(root);
+    }
+  }
+
+  // ---- janela do cartão ----
+  function openQCard(cardId) {
+    const f = qFindCard(cardId); if (!f) return;
+    const { board, col, card } = f;
+    openLkModal((box, close) => {
+      box.appendChild(lkMk("h2", null, "Cartão"));
+      const field = (label) => { const w = lkMk("div", "field"); w.appendChild(lkMk("label", null, label)); box.appendChild(w); return w; };
+      const fT = lkMk("input"); fT.type = "text"; fT.value = card.titulo || ""; field("O que fazer").appendChild(fT);
+      const fN = lkMk("textarea"); fN.value = card.nota || ""; fN.placeholder = "Detalhes, observações…"; field("Notas").appendChild(fN);
+      const row = lkMk("div", "row-2"); box.appendChild(row);
+      const wD = lkMk("div", "field"); wD.appendChild(lkMk("label", null, "Data")); const fD = lkMk("input"); fD.type = "date"; fD.value = card.data || ""; wD.appendChild(fD); row.appendChild(wD);
+      const wE = lkMk("div", "field"); wE.appendChild(lkMk("label", null, "Etiqueta")); const fE = lkMk("select"); wE.appendChild(fE); row.appendChild(wE);
+      let etq = card.status || "";
+      const fillE = () => {
+        fE.innerHTML = ""; const none = lkMk("option", null, "— sem etiqueta —"); none.value = ""; fE.appendChild(none);
+        state.statuses.forEach(s => { const o = lkMk("option", null, s.label); o.value = s.value; fE.appendChild(o); });
+        const n = lkMk("option", null, "➕ Nova etiqueta…"); n.value = "__new"; fE.appendChild(n);
+        fE.value = etq;
+      };
+      fillE();
+      fE.addEventListener("change", () => { if (fE.value === "__new") { fE.value = etq; createStatusFlow(st => { etq = st.value; fillE(); }); } else etq = fE.value; });
+      // checklist
+      const wC = lkMk("div", "field"); wC.appendChild(lkMk("label", null, "☑ Checklist")); box.appendChild(wC);
+      const ckRows = lkMk("div", "q-ck"); wC.appendChild(ckRows);
+      const addCk = (it, focus) => {
+        it = it || {}; const r = lkMk("div", "q-ck-row");
+        const cb = lkMk("input"); cb.type = "checkbox"; cb.checked = !!it.done;
+        const tx = lkMk("input", "q-ck-txt"); tx.type = "text"; tx.value = it.t || ""; tx.placeholder = "Item";
+        const x = lkMk("button", "lk-del", "✕"); x.type = "button"; x.onclick = () => ckRows.removeChild(r);
+        tx.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addCk({}, true); } });
+        r.appendChild(cb); r.appendChild(tx); r.appendChild(x); ckRows.appendChild(r); if (focus) tx.focus();
+      };
+      (card.checklist || []).forEach(it => addCk(it));
+      const addCkBtn = lkMk("button", "btn small lk-add", "+ Item"); addCkBtn.type = "button"; addCkBtn.onclick = () => addCk({}, true); wC.appendChild(addCkBtn);
+      // links
+      const lkEd = lkEditor(card.links); box.appendChild(lkEd.node);
+      // mover
+      const wM = lkMk("div", "field"); wM.appendChild(lkMk("label", null, "Mover para")); box.appendChild(wM);
+      const mv = lkMk("div", "q-move"); wM.appendChild(mv);
+      const sB = lkMk("select"), sC = lkMk("select"); mv.appendChild(sB); mv.appendChild(sC);
+      state.quadros.forEach(b => { const o = lkMk("option", null, b.nome); o.value = b.id; sB.appendChild(o); }); sB.value = board.id;
+      const fillC = () => { sC.innerHTML = ""; const bb = qBoard(sB.value); bb.colunas.forEach(c => { const o = lkMk("option", null, c.nome); o.value = c.id; sC.appendChild(o); }); if (sB.value === board.id) sC.value = col.id; };
+      fillC(); sB.addEventListener("change", fillC);
+      // ações
+      const actions = lkMk("div", "modal-actions");
+      const del = lkMk("button", "btn danger", "Excluir");
+      del.onclick = () => {
+        if (!confirm("Excluir este cartão? Ele vai para a Lixeira e pode ser restaurado por 30 dias.")) return;
+        const tid = trashPush({ kind: "card", quadroId: board.id, colId: col.id, card, idx: f.idx, label: card.titulo || "(sem título)", where: "Quadros · " + board.nome + " · " + col.nome });
+        col.cards.splice(f.idx, 1); saveState(); updateTrashBtn(); close(); renderQuadros(); undoToast("Cartão excluído.", tid);
+      };
+      const right = lkMk("div", "right");
+      const cancel = lkMk("button", "btn", "Cancelar"); cancel.onclick = close;
+      const save = lkMk("button", "btn primary", "Salvar");
+      save.onclick = () => {
+        const titulo = fT.value.trim(); if (!titulo) { alert("Escreva o que precisa ser feito."); fT.focus(); return; }
+        card.titulo = titulo;
+        const nota = fN.value.trim(); if (nota) card.nota = nota; else delete card.nota;
+        if (fD.value) card.data = fD.value; else delete card.data;
+        if (etq) card.status = etq; else delete card.status;
+        const ck = [].slice.call(ckRows.children).map(r => ({ t: r.querySelector(".q-ck-txt").value.trim(), done: r.querySelector("input[type=checkbox]").checked })).filter(x => x.t);
+        if (ck.length) card.checklist = ck; else delete card.checklist;
+        lkApplyList(card, lkEd.get());
+        if (sC.value !== col.id) { saveState(); close(); qMoveCard(card.id, sC.value, null); return; }
+        saveState(); close(); renderQuadros();
+      };
+      right.appendChild(cancel); right.appendChild(save); actions.appendChild(del); actions.appendChild(right); box.appendChild(actions);
+      setTimeout(() => { fT.focus(); fT.select(); }, 40);
+    });
+  }
+  function lkApplyList(obj, ls) { if (ls.length) obj.links = ls; else delete obj.links; }
+  document.getElementById("quadrosTabBtn").onclick = () => switchView("quadros");
 
   // ========== WIRING ==========
   document.getElementById("newBtn").onclick = () => openModal(null);
