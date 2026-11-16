@@ -622,6 +622,49 @@
   .q-tools { position:absolute; right:6px; top:6px; display:none; align-items:center; gap:0; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1px 3px; box-shadow:0 2px 6px rgba(0,0,0,.12); z-index:2; }
   .q-col:hover .q-tools, .q-col:focus-within .q-tools { display:inline-flex; }
   @media (hover:none) { .q-tools { display:inline-flex; position:static; box-shadow:none; border:none; background:transparent; } }
+
+  main.wide-cat { max-width:none; padding-left:26px; padding-right:26px; }
+  /* ===== Tópicos em cartões (colunas) ===== */
+  .eb-board { display:flex; gap:12px; align-items:stretch; overflow-x:auto; padding-bottom:14px; }
+  .eb-col { position:relative; flex:1 1 0; min-width:230px; max-width:520px; background:var(--border-soft); border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:9px; min-height:40vh; }
+  .eb-col.colored { border-top:6px solid var(--qc); background:color-mix(in srgb, var(--qc) 11%, var(--border-soft)); }
+  .eb-col.eb-over { box-shadow:0 0 0 2px var(--accent); }
+  .eb-col-head { display:flex; align-items:flex-start; gap:5px; }
+  .eb-col-title { flex:1; min-width:0; resize:none; overflow:hidden; line-height:1.25; border:1px solid transparent !important; background:transparent !important; font-weight:600; font-size:19px; padding:4px 6px !important; border-radius:7px; font-family:inherit; color:var(--text); }
+  .eb-col-title:hover { border-color:var(--border) !important; background:var(--surface) !important; }
+  .eb-count { color:var(--text-faint); font-size:16px; padding:2px 4px; }
+  .eb-tools { position:absolute; right:6px; top:6px; display:none; align-items:center; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1px 3px; box-shadow:0 2px 6px rgba(0,0,0,.12); z-index:2; }
+  .eb-col:hover .eb-tools, .eb-col:focus-within .eb-tools { display:inline-flex; }
+  .eb-ico { border:none; background:transparent; cursor:pointer; color:var(--text-faint); font-size:15px; padding:4px 5px; border-radius:6px; }
+  .eb-ico:hover { background:var(--border-soft); color:var(--text); }
+  .eb-cards { display:flex; flex-direction:column; gap:8px; min-height:12px; }
+  .eb-col .card.eb-card { display:flex; flex-direction:column; align-items:stretch; gap:5px; padding:11px 12px 30px; position:relative; cursor:pointer; border-radius:10px; }
+  .eb-col .card .name { font-size:17px; }
+  .eb-col .card .subject { font-size:15px; }
+  .eb-col .card .extras { font-size:14px; }
+  .eb-col .card .when { font-size:13.5px; padding:1px 8px; }
+  .eb-col .card select.status { font-size:13.5px; max-width:100%; }
+  .eb-col .card .actions { position:absolute; left:8px; bottom:5px; display:flex; gap:2px; opacity:0; transition:opacity .12s; }
+  .eb-col .card:hover .actions { opacity:1; }
+  .eb-col .card .actions .icon-btn { padding:2px 6px; font-size:14px; }
+  .eb-card.colored { border-left:7px solid var(--qc); background:color-mix(in srgb, var(--qc) 9%, var(--surface)); }
+  .eb-card:hover { border-color:var(--accent); }
+  .eb-ctools { position:absolute; right:8px; bottom:4px; display:flex; align-items:center; gap:1px; }
+  .eb-cbtn { opacity:0; padding:1px 4px !important; font-size:13px !important; }
+  .eb-card:hover .eb-cbtn { opacity:.85; }
+  .eb-grip { color:var(--text-faint); font-size:20px; line-height:1; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none; opacity:.55; padding:0 2px; }
+  .eb-card:hover .eb-grip { opacity:1; }
+  .eb-card.dragging { opacity:.35; }
+  .eb-card.eb-before { box-shadow:0 -7px 0 0 var(--accent); }
+  .eb-card.eb-after { box-shadow:0 7px 0 0 var(--accent); }
+  .eb-ghost { position:fixed; z-index:400; pointer-events:none; opacity:.95; box-shadow:0 12px 28px rgba(0,0,0,.28); transform:rotate(1.5deg); margin:0; }
+  body.eb-dragging, body.eb-dragging * { cursor:grabbing !important; user-select:none !important; }
+  .eb-add { width:100%; text-align:left; border:none; background:transparent; color:var(--text-soft); font:inherit; font-size:16px; padding:9px 8px; border-radius:8px; cursor:pointer; margin-top:auto; }
+  .eb-add:hover { background:var(--surface); color:var(--text); }
+  .eb-newcol { flex:0 0 150px; align-self:flex-start; border:2px dashed var(--border); background:transparent; color:var(--text-soft); font:inherit; font-size:16px; padding:12px; border-radius:12px; cursor:pointer; }
+  .eb-newcol:hover { background:var(--border-soft); }
+  @media (hover:none) { .eb-tools { display:inline-flex; position:static; box-shadow:none; border:none; background:transparent; } .eb-col .card .actions { opacity:1; } .eb-cbtn { opacity:.7; } }
+  @media (max-width:700px) { .eb-col { flex:0 0 86vw; } }
   @media (max-width:700px){ .q-col{flex:0 0 88vw;min-width:0;max-width:none;width:88vw;} }
 </style>
 </head>
@@ -1736,6 +1779,7 @@ window.MindMapApp = (function(){
     s = s && typeof s === "object" ? s : {};
     if (!s.items || !Array.isArray(s.items)) s.items = [];
     if (!Array.isArray(s.quadros)) s.quadros = [];
+    if (!s.boardsCat || typeof s.boardsCat !== "object" || Array.isArray(s.boardsCat)) s.boardsCat = {};
     if (!s.categorias || !Array.isArray(s.categorias) || s.categorias.length === 0) {
       s.categorias = JSON.parse(JSON.stringify(DEFAULT_CATEGORIAS));
     }
@@ -2253,6 +2297,7 @@ window.MindMapApp = (function(){
   // ========== VIEW SWITCH (categoria vs calendário vs calendário de posts vs teses vs dashboard) ==========
   function switchView(view) {
     activeView = view;
+    document.querySelector("main").classList.toggle("wide-cat", view === "categoria");
     document.getElementById("categoriaView").style.display = view === "categoria" ? "" : "none";
     document.getElementById("calendarioView").classList.toggle("active", view === "calendario");
     document.getElementById("postsCalendarioView").classList.toggle("active", view === "postsCalendario");
@@ -2433,49 +2478,7 @@ window.MindMapApp = (function(){
     } else if (sortBy === "criado") {
       items.sort((a,b) => b.criado - a.criado);
     }
-    if (items.length === 0) {
-      const cat = state.categorias.find(c => c.id === activeTab);
-      const icon = cat ? cat.icon : "•";
-      const label = cat ? cat.label : "—";
-      list.innerHTML = `<div class="empty"><p style="font-size:32px;">${escapeHtml(icon)}</p><p><strong>Nenhum item em ${escapeHtml(label)}</strong></p><p>Clique em <em>+ Adicionar nesta aba</em> para começar.</p></div>`;
-      return;
-    }
-    items.forEach(item => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.dataset.id = item.id;
-      const wCls = whenClass(item.data);
-      const sDef = getStatusDef(item.status);
-      let statusOptions = state.statuses.map(s =>
-        `<option value="${s.value}" ${s.value === item.status ? "selected" : ""}>${escapeHtml(s.label)}</option>`
-      ).join("");
-      if (item.status && !state.statuses.some(s => s.value === item.status)) {
-        statusOptions += `<option value="${item.status}" selected>${escapeHtml(item.status)}</option>`;
-      }
-      statusOptions += `<option disabled>──────────</option><option value="__new">➕ Nova etiqueta…</option><option value="__manage">⚙ Gerenciar etiquetas…</option>`;
-      const extras = (state.customFields || [])
-        .filter(f => item.extra && item.extra[f.id])
-        .map(f => `<span class="extra"><span class="lbl">${escapeHtml(f.label)}:</span>${escapeHtml(item.extra[f.id])}</span>`)
-        .join("");
-      card.innerHTML = `
-        <div class="drag-handle" title="Arraste para reordenar">⋮⋮</div>
-        <div class="main-line">
-          <span class="name">${escapeHtml(item.nome || "(sem nome)")}</span>
-          <span class="when ${wCls}">${fmtDateTime(item.data, item.hora)}</span>
-          <select class="status" style="background-color:${sDef.bg}; color:${sDef.color};" title="Mudar status" data-action="status" data-id="${item.id}">${statusOptions}</select>
-        </div>
-        <div class="subject">${escapeHtml(item.assunto || "")}</div>
-        ${extras ? `<div class="extras">${extras}</div>` : ""}
-        ${lkChipsHtml(item)}
-        <div class="actions">
-          <button class="icon-btn" title="Marcar feito/pendente" data-action="toggle" data-id="${item.id}">✓</button>
-          <button class="icon-btn" title="Editar" data-action="edit" data-id="${item.id}">✎</button>
-          <button class="icon-btn" title="Excluir" data-action="delete" data-id="${item.id}">🗑</button>
-        </div>
-      `;
-      attachCardDnD(card, item);
-      list.appendChild(card);
-    });
+    renderCatBoard(list, activeTab, items, itemCardEl);
     list.querySelectorAll("[data-action]").forEach(b => {
       const action = b.getAttribute("data-action");
       const id = b.getAttribute("data-id");
@@ -2617,6 +2620,7 @@ window.MindMapApp = (function(){
     el.onclick = () => switchView("calendario");
   }
   function renderAll() {
+    document.querySelector("main").classList.toggle("wide-cat", activeView === "categoria");
     renderTabs(); renderList(); updateSubline(); renderAlertBanner();
     if (activeView === "postsCalendario") renderPostsCalendar();
     if (activeView === "teses") renderTeses();
@@ -3100,7 +3104,7 @@ window.MindMapApp = (function(){
   }
   function closeModal() {
     document.getElementById("modalBg").classList.remove("open");
-    editingId = null;
+    editingId = null; pendingNewCol = null;
   }
   function saveModal() {
     const data = {
@@ -3124,12 +3128,15 @@ window.MindMapApp = (function(){
       it.extra = extra;
       lkApply(it, "lkSlotItem");
       if (oldCat !== data.categoria) {
+        delete it.col;
         const maxOrd = state.items.filter(i => i.categoria === data.categoria && i.id !== it.id).reduce((m, x) => Math.max(m, x.ordem ?? -1), -1);
         it.ordem = maxOrd + 1;
       }
     } else {
       const maxOrd = state.items.filter(i => i.categoria === data.categoria).reduce((m, x) => Math.max(m, x.ordem ?? -1), -1);
       const nu = { id: uid(), criado: Date.now(), ordem: maxOrd + 1, extra, ...data };
+      if (pendingNewCol && data.categoria === activeTab) nu.col = pendingNewCol;
+      pendingNewCol = null;
       lkApply(nu, "lkSlotItem");
       state.items.push(nu);
     }
@@ -4630,6 +4637,190 @@ window.MindMapApp = (function(){
   }
   function lkApplyList(obj, ls) { if (ls.length) obj.links = ls; else delete obj.links; }
   document.getElementById("quadrosTabBtn").onclick = () => switchView("quadros");
+
+  // =========================================================
+  // TÓPICOS (categorias) EM CARTÕES: colunas (subtópicos) com cartões, cores e arrastar
+  // =========================================================
+  let ebDrag = null, ebSuppress = false, pendingNewCol = null;
+  function ebGetCols(catId) {
+    if (!state.boardsCat || typeof state.boardsCat !== "object") state.boardsCat = {};
+    if (!Array.isArray(state.boardsCat[catId]) || !state.boardsCat[catId].length) state.boardsCat[catId] = [{ id: "c_main", nome: "Cards" }];
+    return state.boardsCat[catId];
+  }
+  function ebColOf(item, cols) { return (item.col && cols.some(c => c.id === item.col)) ? item.col : cols[0].id; }
+  function openModalInCol(colId) { pendingNewCol = colId; openModal(null); }
+
+  function ebMakeCard(card, item) {
+    card.classList.add("eb-card");
+    qApplyCor(card, item.cor);
+    const tools = lkMk("span", "eb-ctools");
+    const cb = lkMk("button", "icon-btn eb-cbtn", "🎨"); cb.type = "button"; cb.title = "Mudar a cor do cartão";
+    cb.addEventListener("pointerdown", e => e.stopPropagation());
+    cb.addEventListener("click", e => { e.stopPropagation(); qCorModal("Cor do cartão", item.cor, v => { if (v) item.cor = v; else delete item.cor; saveState(); renderAll(); }); });
+    const grip = lkMk("span", "eb-grip", "⠿"); grip.title = "Arraste para mudar de lugar";
+    tools.appendChild(cb); tools.appendChild(grip); card.appendChild(tools);
+    card.addEventListener("click", e => {
+      if (ebSuppress) return;
+      if (e.target.closest("a,button,input,select,textarea")) return;
+      openModal(item.id);
+    });
+    card.addEventListener("pointerdown", e => ebPtrDown(e, card, item.id));
+  }
+  function ebPtrDown(e, card, id) {
+    if (ebDrag) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (e.target.closest("a,button,input,select,textarea")) return;
+    if (e.pointerType !== "mouse" && !e.target.closest(".eb-grip")) return;
+    ebDrag = { id, card, sx: e.clientX, sy: e.clientY, started: false, ghost: null, target: null, pos: "after", colId: null };
+    document.addEventListener("pointermove", ebPtrMove);
+    document.addEventListener("pointerup", ebPtrUp);
+    document.addEventListener("pointercancel", ebPtrCancel);
+    document.addEventListener("keydown", ebPtrKey);
+  }
+  function ebPtrKey(e) { if (e.key === "Escape") ebPtrCancel(); }
+  function ebClearMarks() {
+    ["eb-before", "eb-after", "eb-over"].forEach(c => document.querySelectorAll("." + c).forEach(n => n.classList.remove(c)));
+  }
+  function ebPtrEnd() {
+    document.removeEventListener("pointermove", ebPtrMove); document.removeEventListener("pointerup", ebPtrUp);
+    document.removeEventListener("pointercancel", ebPtrCancel); document.removeEventListener("keydown", ebPtrKey);
+    if (ebDrag) { if (ebDrag.ghost) ebDrag.ghost.remove(); ebDrag.card.classList.remove("dragging"); }
+    document.body.classList.remove("eb-dragging"); ebClearMarks(); ebDrag = null;
+  }
+  function ebPtrCancel() { if (ebDrag && ebDrag.started) { ebSuppress = true; setTimeout(() => { ebSuppress = false; }, 0); } ebPtrEnd(); }
+  function ebPtrMove(e) {
+    const d = ebDrag; if (!d) return;
+    if (!d.started) {
+      if (Math.abs(e.clientX - d.sx) + Math.abs(e.clientY - d.sy) < 7) return;
+      d.started = true;
+      const r = d.card.getBoundingClientRect();
+      d.ox = d.sx - r.left; d.oy = d.sy - r.top;
+      const g = d.card.cloneNode(true); g.classList.add("eb-ghost"); g.classList.remove("dragging");
+      g.style.width = r.width + "px"; document.body.appendChild(g); d.ghost = g;
+      d.card.classList.add("dragging"); document.body.classList.add("eb-dragging");
+      try { window.getSelection().removeAllRanges(); } catch (x) {}
+    }
+    e.preventDefault();
+    d.ghost.style.left = (e.clientX - d.ox) + "px"; d.ghost.style.top = (e.clientY - d.oy) + "px";
+    const board = document.querySelector(".eb-board");
+    if (board) { const br = board.getBoundingClientRect(); if (e.clientX > br.right - 60) board.scrollLeft += 18; else if (e.clientX < br.left + 60) board.scrollLeft -= 18; }
+    if (e.clientY > window.innerHeight - 70) window.scrollBy(0, 16); else if (e.clientY < 70) window.scrollBy(0, -16);
+    ebClearMarks();
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    const col = under && under.closest ? under.closest(".eb-col") : null;
+    d.target = null; d.colId = null;
+    if (!col) return;
+    d.colId = col.dataset.id; col.classList.add("eb-over");
+    const cards = [].slice.call(col.querySelectorAll(".eb-card")).filter(c => c !== d.card);
+    for (let i = 0; i < cards.length; i++) {
+      const rr = cards[i].getBoundingClientRect();
+      if (e.clientY < rr.top + rr.height / 2) { d.target = cards[i]; d.pos = "before"; cards[i].classList.add("eb-before"); return; }
+    }
+    if (cards.length) { d.target = cards[cards.length - 1]; d.pos = "after"; d.target.classList.add("eb-after"); }
+  }
+  function ebPtrUp() {
+    const d = ebDrag; if (!d) return;
+    const moved = d.started, target = d.target, pos = d.pos, id = d.id, colId = d.colId;
+    ebPtrEnd();
+    if (!moved) return;
+    ebSuppress = true; setTimeout(() => { ebSuppress = false; }, 0);
+    if (!colId) return;
+    const item = state.items.find(i => i.id === id); if (!item) return;
+    const cat = item.categoria;
+    const all = state.items.filter(i => i.categoria === cat && i.id !== id).sort((a, b) => (a.ordem ?? 9999) - (b.ordem ?? 9999));
+    let idx = all.length;
+    if (target) {
+      const ti = all.findIndex(i => i.id === target.dataset.id);
+      if (ti > -1) idx = pos === "before" ? ti : ti + 1;
+    } else {
+      const cols = ebGetCols(cat);
+      let last = -1; all.forEach((it, k) => { if (ebColOf(it, cols) === colId) last = k; });
+      idx = last > -1 ? last + 1 : all.length;
+    }
+    all.splice(idx, 0, item);
+    all.forEach((it, k) => { it.ordem = k; });
+    if (colId === "c_main" && !ebGetCols(cat).some(c => c.id !== "c_main")) delete item.col; else item.col = colId;
+    document.getElementById("sortBy").value = "manual";
+    saveState(); renderAll();
+  }
+
+  function renderCatBoard(list, catId, items, cardBuilder) {
+    const cols = ebGetCols(catId);
+    const board = lkMk("div", "eb-board");
+    cols.forEach((col, ci) => {
+      const c = lkMk("div", "eb-col"); c.dataset.id = col.id; qApplyCor(c, col.cor);
+      const mine = items.filter(it => ebColOf(it, cols) === col.id);
+      const head = lkMk("div", "eb-col-head");
+      const title = lkMk("textarea", "eb-col-title"); title.rows = 1; title.value = col.nome; title.title = "Clique para renomear";
+      const fit = () => { title.style.height = "auto"; title.style.height = title.scrollHeight + "px"; };
+      title.addEventListener("input", fit); setTimeout(fit, 0);
+      title.addEventListener("change", () => { const v = title.value.trim(); if (v) { col.nome = v; saveState(); } else title.value = col.nome; });
+      title.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); title.blur(); } });
+      head.appendChild(title);
+      head.appendChild(lkMk("span", "eb-count", String(mine.length)));
+      const tools = lkMk("span", "eb-tools");
+      const mk = (t, tt, fn) => { const b = lkMk("button", "eb-ico", t); b.type = "button"; b.title = tt; b.onclick = fn; tools.appendChild(b); };
+      mk("🎨", "Mudar a cor da coluna", () => qCorModal("Cor da coluna “" + col.nome + "”", col.cor, v => { if (v) col.cor = v; else delete col.cor; saveState(); renderAll(); }));
+      if (ci > 0) mk("◀", "Mover coluna para a esquerda", () => { [cols[ci - 1], cols[ci]] = [cols[ci], cols[ci - 1]]; saveState(); renderAll(); });
+      if (ci < cols.length - 1) mk("▶", "Mover coluna para a direita", () => { [cols[ci + 1], cols[ci]] = [cols[ci], cols[ci + 1]]; saveState(); renderAll(); });
+      if (cols.length > 1) mk("🗑", "Excluir coluna", () => {
+        const dest = cols[ci === 0 ? 1 : 0];
+        const todos = state.items.filter(it => it.categoria === catId && ebColOf(it, cols) === col.id);
+        if (!confirm('Excluir a coluna "' + col.nome + '"?' + (todos.length ? " Os " + todos.length + ' cartão(ões) dela vão para a coluna "' + dest.nome + '".' : ""))) return;
+        todos.forEach(it => { it.col = dest.id; });
+        cols.splice(ci, 1); saveState(); renderAll(); lkToast("Coluna excluída.");
+      });
+      head.appendChild(tools);
+      c.appendChild(head);
+      const cl = lkMk("div", "eb-cards");
+      mine.forEach(it => cl.appendChild(cardBuilder(it)));
+      c.appendChild(cl);
+      const add = lkMk("button", "eb-add", "+ Adicionar cartão"); add.type = "button";
+      add.onclick = () => openModalInCol(col.id);
+      c.appendChild(add);
+      board.appendChild(c);
+    });
+    const nc = lkMk("button", "eb-newcol", "+ Nova coluna"); nc.type = "button";
+    nc.onclick = () => qAsk("Nova coluna", "Nome da coluna (ex: Aguardando cliente)", "", "Criar", v => { cols.push({ id: "col_" + uid(), nome: v }); saveState(); renderAll(); });
+    board.appendChild(nc);
+    list.appendChild(board);
+  }
+
+  function itemCardEl(item) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.dataset.id = item.id;
+      const wCls = whenClass(item.data);
+      const sDef = getStatusDef(item.status);
+      let statusOptions = state.statuses.map(s =>
+        `<option value="${s.value}" ${s.value === item.status ? "selected" : ""}>${escapeHtml(s.label)}</option>`
+      ).join("");
+      if (item.status && !state.statuses.some(s => s.value === item.status)) {
+        statusOptions += `<option value="${item.status}" selected>${escapeHtml(item.status)}</option>`;
+      }
+      statusOptions += `<option disabled>──────────</option><option value="__new">➕ Nova etiqueta…</option><option value="__manage">⚙ Gerenciar etiquetas…</option>`;
+      const extras = (state.customFields || [])
+        .filter(f => item.extra && item.extra[f.id])
+        .map(f => `<span class="extra"><span class="lbl">${escapeHtml(f.label)}:</span>${escapeHtml(item.extra[f.id])}</span>`)
+        .join("");
+      card.innerHTML = `
+        <div class="main-line">
+          <span class="name">${escapeHtml(item.nome || "(sem nome)")}</span>
+          <span class="when ${wCls}">${fmtDateTime(item.data, item.hora)}</span>
+          <select class="status" style="background-color:${sDef.bg}; color:${sDef.color};" title="Mudar status" data-action="status" data-id="${item.id}">${statusOptions}</select>
+        </div>
+        <div class="subject">${escapeHtml(item.assunto || "")}</div>
+        ${extras ? `<div class="extras">${extras}</div>` : ""}
+        ${lkChipsHtml(item)}
+        <div class="actions">
+          <button class="icon-btn" title="Marcar feito/pendente" data-action="toggle" data-id="${item.id}">✓</button>
+          <button class="icon-btn" title="Editar" data-action="edit" data-id="${item.id}">✎</button>
+          <button class="icon-btn" title="Excluir" data-action="delete" data-id="${item.id}">🗑</button>
+        </div>
+      `;
+      ebMakeCard(card, item);
+      return card;
+  }
 
   // ========== WIRING ==========
   document.getElementById("newBtn").onclick = () => openModal(null);
